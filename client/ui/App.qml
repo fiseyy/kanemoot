@@ -1,6 +1,6 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
-
+import "components"
 ApplicationWindow {
     id: rootWindow
     width: 1229
@@ -9,4 +9,12 @@ ApplicationWindow {
     minimumHeight: 600
     visible: true
     title: qsTr("KANEMOOT")
+    ErrorToastManager {
+        id: errorToastManager
+        anchors.fill: parent
+    }
+
+    function handleError(title, message) {
+        errorToastManager.enqueue(title, message)
+    }
 }

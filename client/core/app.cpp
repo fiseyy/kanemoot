@@ -1,5 +1,6 @@
 #include <QQuickStyle>
 #include "core/app.h"
+#include "core/errorhandler.h"
 #include "utils/logging.h"
 
 App::App(QObject *parent)
@@ -30,6 +31,7 @@ void App::run()
         qFatal("Failed to load QML");
     }
     appController->start();
+    ErrorHandler::instance().init(engine);
 }
 
 QQmlApplicationEngine *App::getEngine() const { return engine; }

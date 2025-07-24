@@ -1,5 +1,6 @@
 #include <QDebug>
 #include "controller/loginpage.h"
+#include "core/errorhandler.h"
 
 LoginPage::LoginPage(QObject *parent)
 {
@@ -27,6 +28,7 @@ void LoginPage::onLoginButtonClicked(const QString &username, const QString &pas
 {
     // emit loginSuccessful()
     // emit loginFailed(msg)
-    qDebug() << "LOGIN ATTEMPED:" << username << password;
+    // qDebug() << "LOGIN ATTEMPED:" << username << password;
+    ErrorHandler::instance().showError("Предупреждение", "Попытка входа в аккаунт...");
     emit loginSuccessful();
 }

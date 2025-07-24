@@ -6,6 +6,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Core Quick QuickControls2)
+find_package(Qt6 REQUIRED COMPONENTS Core)
 
 
 qt_add_executable(appkanemoot
@@ -31,6 +32,7 @@ qt_add_qml_module(appkanemoot
     QML_FILES ui/components/ErrorToast.qml
     QML_FILES
     QML_FILES ui/components/ErrorToastManager.qml
+    SOURCES core/errorhandler.h core/errorhandler.cpp
 
 )
 
@@ -54,6 +56,7 @@ target_link_libraries(appkanemoot
     Qt6::Core
     Qt6::QuickControls2
 )
+target_link_libraries(appkanemoot PRIVATE Qt6::Core)
 
 include(GNUInstallDirs)
 install(TARGETS appkanemoot
