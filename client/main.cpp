@@ -1,0 +1,14 @@
+#include <QGuiApplication>
+#include <QQmlApplicationEngine>
+#include "core/app.h"
+
+int main(int argc, char *argv[])
+{
+    QGuiApplication app(argc, argv);
+
+    App application;
+    application.init();
+    application.run();
+
+    return app.exec();
+}

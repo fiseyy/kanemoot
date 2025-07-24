@@ -1,0 +1,89 @@
+#include "utils/logging.h"
+#include <QDateTime>
+#include <QDebug>
+#include <QDir>
+#include <QStandardPaths>
+Logging::Logging(QObject* parent) : QObject(parent) {
+  QString logDirPath;
+#ifdef Q_OS_WIN
+    logDirPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/kanemoot/logs";
+#elif defined(Q_OS_MACOS)
+    logDirPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/logs";
+#else // Linux и прочее
+    logDirPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/kanemoot/logs";
+#endif
+
+  QDir dir;
+  if (!dir.exists(logDirPath)) {
+    dir.mkpath(logDirPath);
+  }
+
+  QString logFilePath = logDirPath + "/latest.log";
+
+  QFileInfo fileInfo(logFilePath);
+  if (fileInfo.exists()) {
+    QDateTime now = QDateTime::currentDateTime();
+    QString oldFilePath =
+        logDirPath + "/" + now.toString("yyyy-MM-dd_HH-mm-ss.zzz") + ".log";
+    if (!QFile::rename(logFilePath, oldFilePath)) {
+      qWarning() << "Не удалось переименовать файл:" << logFilePath;
+    }
+    logFile.close();
+    // QFile::remove(logFilePath); // лишний
+  }
+
+  logFile.setFileName(logFilePath);
+  if (!logFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+    qWarning() << "Не удалось открыть файл лога для записи:" << logFilePath;
+    return;
+  }
+
+  outStream.setDevice(&logFile);
+}
+
+Logging::~Logging() {
+  if (logFile.isOpen()) {
+    logFile.close();
+  }
+}
+
+Logging& Logging::instance() {
+  static Logging instance;
+  return instance;
+}
+
+void Logging::setLogLevel(LogLevel level) {
+  currentLevel = level;
+}
+
+void Logging::log(LogLevel level, const QString& message) {
+    QMutexLocker locker(&mutex);
+  if (level < currentLevel || !logFile.isOpen()) {
+    return;
+  }
+
+  QString timestamp =
+      QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss.zzz");
+  QString levelStr = logLevelToString(level);
+  QString logMessage =
+      QString("[%1] [%2] %3").arg(timestamp, levelStr, message);
+
+  outStream << logMessage << "\n";
+  outStream.flush();
+  qDebug() << logMessage;
+}
+
+QString Logging::logLevelToString(LogLevel level) {
+  switch (level) {
+    case Debug:
+      return "DEBUG";
+    case Info:
+      return "INFO";
+    case Warning:
+      return "WARNING";
+    case Critical:
+      return "CRITICAL";
+    default:
+      return "UNKNOWN";
+  }
+}
