@@ -5,6 +5,7 @@
 #include <QQmlApplicationEngine>
 #include <QCoreApplication>
 #include <QQmlContext>
+#include <QResource>
 #include "controller/appcontroller.h"
 
 class App : public QObject {

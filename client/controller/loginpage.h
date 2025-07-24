@@ -15,6 +15,7 @@ public:
     void cleanup() override;
 
 signals:
+    void loginAttempted(const QString& username, const QString& password);
     void loginSuccessful();
     void loginFailed(const QString& error);
 

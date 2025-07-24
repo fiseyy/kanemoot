@@ -15,8 +15,7 @@ void LoginPage::init()
         return;
     }
 
-    connect(root, SIGNAL(loginAttempted(QString, QString)),
-            this, SLOT(onLoginButtonClicked(QString, QString)));
+    connect(root, SIGNAL(loginAttempted(QString,QString)), this, SLOT(onLoginButtonClicked(QString,QString)));
 }
 
 void LoginPage::cleanup()
@@ -28,5 +27,6 @@ void LoginPage::onLoginButtonClicked(const QString &username, const QString &pas
 {
     // emit loginSuccessful()
     // emit loginFailed(msg)
+    qDebug() << "LOGIN ATTEMPED:" << username << password;
     emit loginSuccessful();
 }

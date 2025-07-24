@@ -24,8 +24,16 @@ qt_add_qml_module(appkanemoot
     SOURCES core/app.h core/app.cpp
     QML_FILES ui/App.qml
     QML_FILES ui/pages/LoginPage.qml
+    QML_FILES ui/components/AnimatedBackground.qml
+    RESOURCES
+    RESOURCES resources.qrc
+    QML_FILES
+    QML_FILES ui/components/ErrorToast.qml
 
 )
+
+qt6_add_resources(RESOURCE_ADDED resources.qrc)
+target_sources(appkanemoot PRIVATE ${RESOURCE_ADDED})
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an

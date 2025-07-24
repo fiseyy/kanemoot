@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/">
+        <file>assets/icons/toggle_off.svg</file>
+        <file>assets/icons/toggle_on.svg</file>
+        <file>assets/icons/logo.png</file>
+        <file>assets/icons/error.png</file>
+    </qresource>
+</RCC>

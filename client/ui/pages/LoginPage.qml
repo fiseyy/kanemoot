@@ -1,15 +1,51 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
+import "../components"
 
 Item {
     id: loginPage
     anchors.fill: parent
-    Rectangle {
-        anchors.fill: parent
-        color: "#0e0e0e"
-    }
-
     signal loginAttempted(string username, string password)
+
+    // property bool bgEnabled: true
+
+    // AnimatedBackground {
+    //     id: bg
+    //     anchors.fill: parent
+    //     enabled: loginPage.bgEnabled
+    // }
+
+    // Rectangle {
+    //     anchors.fill: parent
+    //     color: "transparent"
+    //     visible: bgEnabled
+    // }
+
+    // Rectangle {
+    //     anchors.fill: parent
+    //     color: "#0e0e0e"
+    //     visible: !bgEnabled
+    // }
+
+    // Image {
+    //     id: toggleIcon
+    //     source: bgEnabled ? "qrc:///assets/icons/toggle_on.svg" : "qrc:///assets/icons/toggle_off.svg"
+    //     anchors.bottom: parent.bottom
+    //     anchors.right: parent.right
+    //     anchors.margins: 12
+    //     smooth: true
+    //     MouseArea {
+    //         anchors.fill: parent
+    //         cursorShape: Qt.PointingHandCursor
+    //         onClicked: bgEnabled = !bgEnabled
+    //     }
+    // }
+
+    Image {
+        anchors.fill: parent
+        source: "qrc:///assets/background.png"
+        fillMode: Image.PreserveAspectCrop
+    }
 
     Rectangle {
         anchors.centerIn: parent
@@ -17,17 +53,15 @@ Item {
         height: 380
         radius: 18
         color: "#1b1b1b"
+        opacity: 0.9
         border.color: "#3a3a3a"
         border.width: 1
-        // layer.enabled: true
-        // layer.smooth: true
 
         Row {
             anchors.fill: parent
             anchors.margins: 30
             spacing: 40
 
-            // Левая колонка: вход
             Column {
                 width: parent.width * 0.5
                 spacing: 18
@@ -77,7 +111,6 @@ Item {
                     topPadding: 8
                     bottomPadding: 8
                 }
-
                 Button {
                     text: "Войти"
                     font.pixelSize: 16
@@ -87,7 +120,7 @@ Item {
                         color: parent.pressed ? "#016d73" : "#01818D"
                     }
                     onClicked: {
-                        loginPage.loginAttempted(usernameField.text, passwordField.text)
+                        loginAttempted(usernameField.text, passwordField.text)
                     }
                 }
 
@@ -135,5 +168,15 @@ Item {
                 }
             }
         }
+    }
+    ErrorToast {
+        id: errorToast
+        anchors.right: parent.right
+        anchors.top: parent.top
+    }
+
+    Button {
+        text: "Вызвать ошибку"
+        onClicked: errorToast.show("Ошибка", "Что-то пошло не так.")
     }
 }

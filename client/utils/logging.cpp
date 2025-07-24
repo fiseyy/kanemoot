@@ -30,7 +30,6 @@ Logging::Logging(QObject* parent) : QObject(parent) {
       qWarning() << "Не удалось переименовать файл:" << logFilePath;
     }
     logFile.close();
-    // QFile::remove(logFilePath); // лишний
   }
 
   logFile.setFileName(logFilePath);
