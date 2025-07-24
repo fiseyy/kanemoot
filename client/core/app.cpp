@@ -1,3 +1,4 @@
+#include <QQuickStyle>
 #include "core/app.h"
 #include "utils/logging.h"
 
@@ -8,6 +9,8 @@ App::App(QObject *parent)
 
 void App::init()
 {
+    QQuickStyle::setStyle("Fusion");
+
     QCoreApplication::setOrganizationName("KANEMOOT");
     QCoreApplication::setApplicationName("KANEMOOT Messenger");
 
@@ -17,8 +20,19 @@ void App::init()
 
 void App::run()
 {
-    appController = new AppController(this);
+    engine = new QQmlApplicationEngine(this);
+    appController = new AppController(this, engine);
+
+    engine->rootContext()->setContextProperty("appController", appController);
+    engine->load(QUrl(QStringLiteral("qrc:/kanemoot/ui/App.qml")));
+    if (engine->rootObjects().isEmpty()) {
+        LOG(Logging::Critical, "Failed to load QML");
+        qFatal("Failed to load QML");
+    }
+    appController->start();
 }
+
+QQmlApplicationEngine *App::getEngine() const { return engine; }
 
 void App::setupLogging()
 {

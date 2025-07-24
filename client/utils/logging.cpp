@@ -1,8 +1,9 @@
-#include "utils/logging.h"
 #include <QDateTime>
 #include <QDebug>
 #include <QDir>
 #include <QStandardPaths>
+#include "utils/logging.h"
+
 Logging::Logging(QObject* parent) : QObject(parent) {
   QString logDirPath;
 #ifdef Q_OS_WIN

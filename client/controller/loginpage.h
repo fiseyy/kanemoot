@@ -2,6 +2,8 @@
 #define LOGINPAGE_H
 
 #include <QObject>
+#include <QQmlApplicationEngine>
+#include <QCoreApplication>
 #include "controller/basepage.h"
 
 class LoginPage : public BasePage {

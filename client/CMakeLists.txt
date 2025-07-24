@@ -5,10 +5,7 @@ project(kanemoot VERSION 0.1 LANGUAGES CXX)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Quick)
-find_package(Qt6 REQUIRED COMPONENTS Core)
-find_package(Qt6 REQUIRED COMPONENTS Core)
-find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core Quick QuickControls2)
 
 
 qt_add_executable(appkanemoot
@@ -25,6 +22,8 @@ qt_add_qml_module(appkanemoot
     SOURCES controller/registrationpage.h controller/registrationpage.cpp
     SOURCES utils/logging.cpp utils/logging.h
     SOURCES core/app.h core/app.cpp
+    QML_FILES ui/App.qml
+    QML_FILES ui/pages/LoginPage.qml
 
 )
 
@@ -40,11 +39,11 @@ set_target_properties(appkanemoot PROPERTIES
 )
 
 target_link_libraries(appkanemoot
-    PRIVATE Qt6::Quick
+    PRIVATE
+    Qt6::Quick
+    Qt6::Core
+    Qt6::QuickControls2
 )
-target_link_libraries(appkanemoot PRIVATE Qt6::Core)
-target_link_libraries(appkanemoot PRIVATE Qt6::Core)
-target_link_libraries(appkanemoot PRIVATE Qt6::Core)
 
 include(GNUInstallDirs)
 install(TARGETS appkanemoot

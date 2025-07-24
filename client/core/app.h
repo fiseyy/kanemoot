@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QQmlApplicationEngine>
 #include <QCoreApplication>
+#include <QQmlContext>
 #include "controller/appcontroller.h"
 
 class App : public QObject {
@@ -13,11 +14,12 @@ public:
     explicit App(QObject* parent = nullptr);
     void init();
     void run();
-
+    QQmlApplicationEngine* getEngine() const;
 private:
     void setupLogging();
     void setupDependencies();
 
+    QQmlApplicationEngine* engine = nullptr;
     AppController* appController = nullptr;
 };
 
