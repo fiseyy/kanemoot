@@ -4,7 +4,7 @@ import QtQuick.Layouts 1.15
 
 Rectangle {
     id: toast
-    width: parent ? parent.width * 0.6 : 400
+    width: parent ? parent.width * 0.4 : 300
     height: 80
     radius: 10
     color: "#cc2e2e2e"
@@ -14,7 +14,7 @@ Rectangle {
     visible: false
     z: 1000
     opacity: 0.0
-
+    signal dismissed()
     Image {
         source: "qrc:///assets/icons/error.png"
         width: 24
@@ -84,6 +84,21 @@ Rectangle {
         from: 1.0
         to: 0.0
         duration: 300
-        onStopped: toast.visible = false
+        onStopped: {
+            toast.visible = false
+            toast.dismissed()
+        }
     }
+    MouseArea {
+        anchors.fill: parent
+        onClicked: {
+            if (toastBehaviorReverse.running)
+                return;
+            hideTimer.stop();
+            toastBehaviorReverse.start();
+        }
+        hoverEnabled: true
+        cursorShape: Qt.PointingHandCursor
+    }
+
 }

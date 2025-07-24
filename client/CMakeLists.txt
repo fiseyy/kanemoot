@@ -29,6 +29,8 @@ qt_add_qml_module(appkanemoot
     RESOURCES resources.qrc
     QML_FILES
     QML_FILES ui/components/ErrorToast.qml
+    QML_FILES
+    QML_FILES ui/components/ErrorToastManager.qml
 
 )
 

@@ -169,14 +169,25 @@ Item {
             }
         }
     }
-    ErrorToast {
-        id: errorToast
-        anchors.right: parent.right
-        anchors.top: parent.top
+    // ErrorToast {
+    //     id: errorToast
+    //     anchors.right: parent.right
+    //     anchors.top: parent.top
+    // }
+
+    // Button {
+    //     text: "Вызвать ошибку"
+    //     onClicked: errorToast.show("Ошибка", "Что-то пошло не так.")
+    // }
+
+    ErrorToastManager {
+        id: toastManager
+        anchors.fill: parent
     }
 
+    // где-то кнопка
     Button {
         text: "Вызвать ошибку"
-        onClicked: errorToast.show("Ошибка", "Что-то пошло не так.")
+        onClicked: toastManager.enqueue("Ошибка", "Что-то пошло не так", 4000)
     }
 }
