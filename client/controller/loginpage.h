@@ -14,13 +14,18 @@ public:
     void init() override;
     void cleanup() override;
 
+    QString qmlPath() const override;
+
+private:
+    void fail(const QString& error);
+
 signals:
-    void loginAttempted(const QString& username, const QString& password);
     void loginSuccessful();
-    void loginFailed(const QString& error);
 
 public slots:
     void onLoginButtonClicked(const QString& username, const QString& password);
+    void regRedirect();
+    void chatRedirect();
 };
 
 #endif // LOGINPAGE_H

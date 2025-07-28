@@ -2,8 +2,6 @@
 #define ERRORHANDLER_H
 
 #include <QObject>
-
-#include <QObject>
 #include <QQmlApplicationEngine>
 
 class ErrorHandler : public QObject {

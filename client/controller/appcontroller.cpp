@@ -1,5 +1,6 @@
 #include "controller/appcontroller.h"
 #include "controller/loginpage.h"
+#include "controller/registrationpage.h"
 
 AppController::AppController(QObject *parent, QQmlApplicationEngine* engine)
     : QObject(parent), engine(engine)
@@ -7,12 +8,28 @@ AppController::AppController(QObject *parent, QQmlApplicationEngine* engine)
 
 void AppController::setCurrentPage(BasePage *newPage)
 {
+    if (currentPage) {
+        if (auto oldRootObj = currentPage->getRootObject()) {
+            if (auto oldRootItem = qobject_cast<QQuickItem*>(oldRootObj)) {
+                oldRootItem->setParentItem(nullptr);
+                oldRootItem->deleteLater();
+            } else {
+                oldRootObj->deleteLater();
+            }
+        }
+        currentPage->cleanup();
+        currentPage->deleteLater();
+        currentPage = nullptr;
+    }
+
+    connect(newPage, &BasePage::requestPageChange, this, &AppController::onPageChangeRequested);
+
     if (!engine) {
         qWarning() << "QML Engine is null";
         return;
     }
 
-    QQmlComponent component(engine, QUrl(QStringLiteral("qrc:/kanemoot/ui/pages/LoginPage.qml")));
+    QQmlComponent component(engine, QUrl(newPage->qmlPath()));
 
     if (component.status() != QQmlComponent::Ready) {
         qWarning() << "QML Component Error:" << component.errorString();
@@ -48,11 +65,15 @@ void AppController::setCurrentPage(BasePage *newPage)
 void AppController::start()
 {
     LoginPage* loginPage = new LoginPage(this);
-    connect(loginPage, &BasePage::requestPageChange, this, &AppController::onPageChangeRequested);
     setCurrentPage(loginPage);
 }
 
-void AppController::onPageChangeRequested(BasePage *newPage)
+void AppController::onPageChangeRequested(int newPageId)
 {
-    setCurrentPage(newPage);
+    BasePage* newPage = nullptr;
+    switch(newPageId) {
+    case Page_Login: newPage = new LoginPage(this); break;
+    case Page_Register: newPage = new RegistrationPage(this); break;
+    }
+    if (newPage != nullptr) setCurrentPage(newPage);
 }

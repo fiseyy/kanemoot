@@ -16,7 +16,7 @@ public:
     void setCurrentPage(BasePage* newPage);
     void start();
 public slots:
-    void onPageChangeRequested(BasePage* newPage);
+    void onPageChangeRequested(int newPageId);
 private:
     BasePage* currentPage = nullptr;
     QQmlApplicationEngine* engine = nullptr;

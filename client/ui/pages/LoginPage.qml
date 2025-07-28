@@ -6,6 +6,18 @@ Item {
     id: loginPage
     anchors.fill: parent
     signal loginAttempted(string username, string password)
+    signal regRedirectRequested()
+    property bool regRedirectPending: false
+
+    function checkRedirect() {
+        if (!leftColumnHideAnim.running &&
+            !yAnimLeftHide.running &&
+            !rightColumnHideAnim.running &&
+            !yAnimRightHide.running &&
+            regRedirectPending) {
+            regRedirectRequested();
+        }
+    }
 
     // property bool bgEnabled: true
 
@@ -63,8 +75,16 @@ Item {
             spacing: 40
 
             Column {
+                id: leftColumn
                 width: parent.width * 0.5
                 spacing: 18
+
+                opacity: 0
+                y: 20
+
+                Component.onCompleted: {
+                    leftColumnAnim.start();
+                }
 
                 Text {
                     text: "Вход в аккаунт"
@@ -141,13 +161,16 @@ Item {
                     }
 
                     onClicked: {
-                        // Сигнал на регистрацию, если понадобится
+                        regRedirectPending = true
+                        leftColumnHideAnim.start()
+                        rightColumnHideAnim.start()
                     }
                 }
             }
 
             // Правая колонка — QR-код
             Rectangle {
+                id: rightColumn
                 width: parent.width * 0.4
                 height: parent.height - 60
                 radius: 12
@@ -155,6 +178,13 @@ Item {
                 border.color: "#3a3a3a"
                 border.width: 1
                 anchors.verticalCenter: parent.verticalCenter
+
+                opacity: 0
+                y: 20
+
+                Component.onCompleted: {
+                            rightColumnAnim.start();
+                }
 
                 Text {
                     anchors.centerIn: parent
@@ -166,6 +196,107 @@ Item {
                     wrapMode: Text.WordWrap
                     width: parent.width * 0.8
                 }
+            }
+
+            NumberAnimation {
+                    id: leftColumnAnim
+                    target: leftColumn
+                    property: "opacity"
+                    from: 0
+                    to: 1
+                    duration: 400
+                    easing.type: Easing.InOutQuad
+                    onRunningChanged: {
+                        if (running) {
+                            // параллельно анимируем Y
+                            yAnimLeft.start();
+                        }
+                    }
+                }
+            NumberAnimation {
+                    id: yAnimLeft
+                    target: leftColumn
+                    property: "y"
+                    from: 20
+                    to: 0
+                    duration: 400
+                    easing.type: Easing.InOutQuad
+            }
+
+            NumberAnimation {
+                    id: rightColumnAnim
+                    target: rightColumn
+                    property: "opacity"
+                    from: 0
+                    to: 1
+                    duration: 400
+                    easing.type: Easing.InOutQuad
+                    onRunningChanged: {
+                        if (running) {
+                            yAnimRight.start();
+                        }
+                    }
+            }
+            NumberAnimation {
+                    id: yAnimRight
+                    target: rightColumn
+                    property: "y"
+                    from: 20
+                    to: 0
+                    duration: 400
+                    easing.type: Easing.InOutQuad
+            }
+
+            NumberAnimation {
+                id: leftColumnHideAnim
+                target: leftColumn
+                property: "opacity"
+                from: 1
+                to: 0
+                duration: 300
+                easing.type: Easing.InOutQuad
+                onRunningChanged: {
+                    if (running)
+                        yAnimLeftHide.start();
+                }
+                onStopped: checkRedirect()
+            }
+
+            NumberAnimation {
+                id: yAnimLeftHide
+                target: leftColumn
+                property: "y"
+                from: 0
+                to: 20
+                duration: 300
+                easing.type: Easing.InOutQuad
+                onStopped: checkRedirect()
+            }
+
+            NumberAnimation {
+                id: rightColumnHideAnim
+                target: rightColumn
+                property: "opacity"
+                from: 1
+                to: 0
+                duration: 300
+                easing.type: Easing.InOutQuad
+                onRunningChanged: {
+                    if (running)
+                        yAnimRightHide.start();
+                }
+                onStopped: checkRedirect()
+            }
+
+            NumberAnimation {
+                id: yAnimRightHide
+                target: rightColumn
+                property: "y"
+                from: 0
+                to: 20
+                duration: 300
+                easing.type: Easing.InOutQuad
+                onStopped: checkRedirect()
             }
         }
     }

@@ -3,13 +3,14 @@
 #include <QDir>
 #include <QStandardPaths>
 #include "utils/logging.h"
+#include "core/errorhandler.h"
 
 Logging::Logging(QObject* parent) : QObject(parent) {
   QString logDirPath;
 #ifdef Q_OS_WIN
     logDirPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/kanemoot/logs";
 #elif defined(Q_OS_MACOS)
-    logDirPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/logs";
+    logDirPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/kanemoot/logs";
 #else // Linux и прочее
     logDirPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/kanemoot/logs";
 #endif
@@ -71,6 +72,9 @@ void Logging::log(LogLevel level, const QString& message) {
   outStream << logMessage << "\n";
   outStream.flush();
   qDebug() << logMessage;
+  if(level >= Logging::Warning) {
+      ErrorHandler::instance().showError(levelStr, message);
+  }
 }
 
 QString Logging::logLevelToString(LogLevel level) {

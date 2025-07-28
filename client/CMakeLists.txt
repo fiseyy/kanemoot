@@ -33,6 +33,8 @@ qt_add_qml_module(appkanemoot
     QML_FILES
     QML_FILES ui/components/ErrorToastManager.qml
     SOURCES core/errorhandler.h core/errorhandler.cpp
+    QML_FILES ui/pages/RegistrationPage.qml
+    SOURCES utils/authvalidator.h utils/authvalidator.cpp
 
 )
 

@@ -25,6 +25,7 @@ Rectangle {
     }
 
     Column {
+        width: toast.width * 0.85
         spacing: 4
         anchors.left: parent.left
         anchors.leftMargin: 52
@@ -42,7 +43,7 @@ Rectangle {
             font.pixelSize: 13
             color: "#dddddd"
             wrapMode: Text.Wrap
-            elide: Text.ElideRight
+            width: parent.width
         }
     }
 
