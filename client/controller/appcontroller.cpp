@@ -72,8 +72,8 @@ void AppController::onPageChangeRequested(int newPageId)
 {
     BasePage* newPage = nullptr;
     switch(newPageId) {
-    case Page_Login: newPage = new LoginPage(this); break;
-    case Page_Register: newPage = new RegistrationPage(this); break;
+        case Page_Login: newPage = new LoginPage(this); break;
+        case Page_Register: newPage = new RegistrationPage(this); break;
     }
     if (newPage != nullptr) setCurrentPage(newPage);
 }
