@@ -59,3 +59,8 @@ void WebSocketClient::disconnect()
         LOG(Logging::Debug, "WebSocket already disconnected");
     }
 }
+
+QAbstractSocket::SocketState WebSocketClient::getState()
+{
+    return m_webSocket.state();
+}

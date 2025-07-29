@@ -14,6 +14,7 @@ public:
     void connectToServer(const QUrl &url);
     void sendMessage(const QString &message);
     void disconnect();
+    QAbstractSocket::SocketState getState();
 
 signals:
     void connected();

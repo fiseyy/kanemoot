@@ -11,7 +11,6 @@ class AuthManager : public QObject {
     Q_OBJECT
 public:
     explicit AuthManager(QObject *parent = nullptr);
-
     void tryAuth(const QString& login, const QString& password);
 
 signals:

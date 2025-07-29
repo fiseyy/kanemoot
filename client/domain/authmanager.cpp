@@ -19,10 +19,11 @@ void AuthManager::tryAuth(const QString &login, const QString &password)
     QJsonDocument doc(obj);
     m_pendingRequest = doc.toJson(QJsonDocument::Compact);
 
-    connect(m_socket, &WebSocketClient::connected, m_socket, [this]() {
+    if (m_socket->getState() == QAbstractSocket::ConnectedState) {
         m_socket->sendMessage(m_pendingRequest);
-    });
-    m_socket->connectToServer(QUrl("wss://auth-service.kanemoot.ru/ws"));
+    } else {
+        m_socket->connectToServer(QUrl("wss://auth-service.kanemoot.ru/ws"));
+    }
 }
 
 void AuthManager::onConnected()
@@ -40,11 +41,11 @@ void AuthManager::onMessageReceived(const QString &text)
         return;
     }
     QJsonObject obj = doc.object();
-    bool success = obj.value("success").toBool(false);
+    bool success = obj.value("success").toString() == "true";
     if (success) {
         emit authSucceeded();
     } else {
-        QString err = obj.value("error").toString("Неизвестная ошибка");
+        QString err = obj.value("error").toString();
         emit authFailed(err);
     }
 }
