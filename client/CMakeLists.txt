@@ -15,6 +15,7 @@ find_package(Qt6 REQUIRED COMPONENTS
     Network
 )
 find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
 
 
 qt_add_executable(appkanemoot
@@ -44,6 +45,7 @@ qt_add_qml_module(appkanemoot
     QML_FILES ui/pages/RegistrationPage.qml
     SOURCES utils/authvalidator.h utils/authvalidator.cpp
     SOURCES network/websocketclient.h network/websocketclient.cpp
+    SOURCES domain/authmanager.h domain/authmanager.cpp
 
 )
 
@@ -69,6 +71,7 @@ target_link_libraries(appkanemoot
     Qt6::WebSockets
     Qt6::Network
 )
+target_link_libraries(appkanemoot PRIVATE Qt6::Core)
 target_link_libraries(appkanemoot PRIVATE Qt6::Core)
 target_link_libraries(appkanemoot PRIVATE Qt6::Core)
 

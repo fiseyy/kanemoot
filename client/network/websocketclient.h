@@ -10,6 +10,7 @@ class WebSocketClient : public QObject {
 
 public:
     explicit WebSocketClient(QObject *parent = nullptr);
+    ~WebSocketClient();
     void connectToServer(const QUrl &url);
     void sendMessage(const QString &message);
     void disconnect();

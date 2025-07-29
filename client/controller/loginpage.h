@@ -5,6 +5,7 @@
 #include <QQmlApplicationEngine>
 #include <QCoreApplication>
 #include "controller/basepage.h"
+#include "domain/authmanager.h"
 
 class LoginPage : public BasePage {
     Q_OBJECT
@@ -18,6 +19,7 @@ public:
 
 private:
     void fail(const QString& error);
+    AuthManager* m_authmgr = nullptr;
 
 signals:
     void loginSuccessful();

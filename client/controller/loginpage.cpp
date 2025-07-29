@@ -3,7 +3,15 @@
 #include "utils/logging.h"
 #include "utils/authvalidator.h"
 #include "network/websocketclient.h"
-LoginPage::LoginPage(QObject *parent) {}
+
+LoginPage::LoginPage(QObject *parent) {
+    m_authmgr = new AuthManager(this);
+
+    connect(m_authmgr, &AuthManager::authSucceeded, this, &LoginPage::loginSuccessful);
+    connect(m_authmgr, &AuthManager::authFailed, this, [this](const QString& error){
+        fail(error);
+    });
+}
 
 void LoginPage::init()
 {
@@ -41,10 +49,8 @@ void LoginPage::onLoginButtonClicked(const QString &username, const QString &pas
         fail(validator_result.errorMessage);
         return;
     }
-    QUrl url("wss://auth-service.kanemoot.ru/ws");
-    auto webSocketClient = new WebSocketClient(this);
-    webSocketClient->connectToServer(url);
-    emit loginSuccessful();
+
+    m_authmgr->tryAuth(username, password);
 }
 
 
