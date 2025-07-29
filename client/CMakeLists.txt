@@ -5,7 +5,15 @@ project(kanemoot VERSION 0.1 LANGUAGES CXX)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Core Quick QuickControls2)
+# find_package(Qt6 REQUIRED COMPONENTS Core Quick QuickControls2)
+find_package(Qt6 REQUIRED COMPONENTS
+    Core
+    Gui
+    Quick
+    QuickControls2
+    WebSockets
+    Network
+)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 
 
@@ -35,6 +43,7 @@ qt_add_qml_module(appkanemoot
     SOURCES core/errorhandler.h core/errorhandler.cpp
     QML_FILES ui/pages/RegistrationPage.qml
     SOURCES utils/authvalidator.h utils/authvalidator.cpp
+    SOURCES network/websocketclient.h network/websocketclient.cpp
 
 )
 
@@ -57,7 +66,10 @@ target_link_libraries(appkanemoot
     Qt6::Quick
     Qt6::Core
     Qt6::QuickControls2
+    Qt6::WebSockets
+    Qt6::Network
 )
+target_link_libraries(appkanemoot PRIVATE Qt6::Core)
 target_link_libraries(appkanemoot PRIVATE Qt6::Core)
 
 include(GNUInstallDirs)

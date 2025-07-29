@@ -2,7 +2,7 @@
 #include "core/errorhandler.h"
 #include "utils/logging.h"
 #include "utils/authvalidator.h"
-
+#include "network/websocketclient.h"
 LoginPage::LoginPage(QObject *parent) {}
 
 void LoginPage::init()
@@ -41,7 +41,9 @@ void LoginPage::onLoginButtonClicked(const QString &username, const QString &pas
         fail(validator_result.errorMessage);
         return;
     }
-
+    QUrl url("wss://auth-service.kanemoot.ru/ws");
+    auto webSocketClient = new WebSocketClient(this);
+    webSocketClient->connectToServer(url);
     emit loginSuccessful();
 }
 
