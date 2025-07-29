@@ -3,11 +3,17 @@ import json
 
 
 def auth(action, login, password):
+    data = {
+        "success": "false",
+        "error": "",
+    }
     if action == "login":
         if login == "admin" and password == "admin":
-            return "true"
+            data["success"] = "true"
         else:
-            return "false"
+            data["error"] = "неправильный логин и/или пароль"
+
+    return data
 
 
 async def websocket_handler(request):
@@ -27,12 +33,12 @@ async def websocket_handler(request):
                 data = json.loads(msg.data)
                 print(f"\n[Сервер] Получен словарь: {data}")
 
-                response = {
-                    "success": auth(data.get("action"),data.get("user"), data.get("password")),
-                    "error": "",
-                }
+                await ws.send_str(
+                    json.dumps(
+                        auth(data.get("action"), data.get("user"), data.get("password"))
+                    )
+                )
 
-                await ws.send_str(json.dumps(response))
                 print(f"[Сервер] Отправлен ответ клиенту")
 
             except json.JSONDecodeError:
