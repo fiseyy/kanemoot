@@ -1,5 +1,6 @@
 #include "domain/authmanager.h"
 #include "network/websocketclient.h"
+#include "core/errorhandler.h"
 
 AuthManager::AuthManager(QObject *parent)
     : QObject(parent)
@@ -7,10 +8,26 @@ AuthManager::AuthManager(QObject *parent)
     m_socket = new WebSocketClient(this);
     connect(m_socket, &WebSocketClient::connected, this, &AuthManager::onConnected);
     connect(m_socket, &WebSocketClient::messageReceived, this, &AuthManager::onMessageReceived);
+    connect(m_socket, &WebSocketClient::errorOccurred, this, [this](const QString &error) {
+        QString userFriendly;
+        if (error.contains("502")) {
+            userFriendly = "Сервер временно недоступен. Повторите попытку позже.";
+        } else if (error.contains("SSL") || error.contains("handshake")) {
+            userFriendly = "Ошибка шифрования. Проверьте подключение.";
+        } else {
+            userFriendly = error;
+        }
+        ErrorHandler::instance().showError("Ошибка", userFriendly);
+    });
 }
 
 void AuthManager::tryAuth(const QString &login, const QString &password)
 {
+    if (m_socket && m_socket->getState() == QAbstractSocket::ConnectingState) {
+        ErrorHandler::instance().showError("Предупреждение", "Подключение уже выполняется. Подождите.");
+        return;
+    }
+
     QJsonObject obj;
     obj["action"] = "login";
     obj["user"] = login;
@@ -45,7 +62,7 @@ void AuthManager::onMessageReceived(const QString &text)
     if (success) {
         emit authSucceeded();
     } else {
-        QString err = obj.value("error").toString();
-        emit authFailed(err);
+        QString raw = obj.value("error").toString();
+        emit authFailed(raw);
     }
 }

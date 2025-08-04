@@ -9,10 +9,10 @@ WebSocketClient::WebSocketClient(QObject *parent)
     connect(&m_webSocket, &QWebSocket::textMessageReceived, this, &WebSocketClient::messageReceived);
     connect(&m_webSocket, QOverload<QAbstractSocket::SocketError>::of(&QWebSocket::errorOccurred),
             this, [this](QAbstractSocket::SocketError error) {
-                Q_UNUSED(error)
-                LOG(Logging::Warning, "WebSocket error: " + m_webSocket.errorString());
-                emit errorOccurred(m_webSocket.errorString());
-            });
+        QString error_str = m_webSocket.errorString();
+        emit errorOccurred(error_str);
+    });
+
     connect(this, &WebSocketClient::messageReceived, this, [this](QString msg){
         qDebug() << "Получено:" << msg;
     });
@@ -45,7 +45,7 @@ void WebSocketClient::sendMessage(const QString &message)
         m_webSocket.sendTextMessage(message);
         LOG(Logging::Debug, "Sent message: " + message);
     } else {
-        LOG(Logging::Warning, "Attempted to send message while not connected");
+        LOG(Logging::Warning, "Сервер временно недоступен. Повторите попытку позже.");
         qDebug() << m_webSocket.state();
     }
 }
