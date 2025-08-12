@@ -25,7 +25,9 @@ async def websocket_handler(request):
     await ws.prepare(request)
 
     peer_name = request.transport.get_extra_info("peername")
-    print(f"Новое подключение от {peer_name}")
+    real_ip = request.headers.get("X-Real-IP") or request.headers.get("X-Forwarded-For", "").split(",")[0].strip()
+    client_info = real_ip or f"{peer_name[0]}:{peer_name[1]}"
+    print(f"Новое подключение от {client_info}")
 
     async for msg in ws:
         if msg.type == web.WSMsgType.TEXT:
@@ -52,7 +54,7 @@ async def websocket_handler(request):
         elif msg.type == web.WSMsgType.ERROR:
             print(f"[Сервер] Ошибка соединения: {ws.exception()}")
 
-    print(f"[Сервер] Соединение с {peer_name} закрыто")
+    print(f"[Сервер] Соединение с {client_info} закрыто")
     return ws
 
 
