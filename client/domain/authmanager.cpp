@@ -78,6 +78,7 @@ void AuthManager::onConnected()
 void AuthManager::onMessageReceived(const QString &text)
 {
     QJsonDocument doc = QJsonDocument::fromJson(text.toUtf8());
+    qDebug() << doc;
     if (!doc.isObject()) {
         emit authFailed("Неверный формат ответа сервера");
         LOG(Logging::Debug, "Неверный формат ответа сервера. Полученный ответ сервера: " + text.toUtf8());

@@ -10,14 +10,14 @@ def auth(action, login, password, email=""):
     Возвращает словарь с результатом операции.
     """
     data = {
-        "success": False,
+        "success": "false",
         "error": "",
     }
 
     if action == "login":
         # Проверка аутентификации пользователя
         if authenticate_user(login, password):
-            data["success"] = True
+            data["success"] = "true"
         else:
             data["error"] = "Неправильный логин и/или пароль"
 
@@ -36,7 +36,7 @@ def auth(action, login, password, email=""):
 
         try:
             create_user(login, password)
-            data["success"] = True
+            data["success"] = "true"
         except Exception as e:
             data["error"] = f"Ошибка при создании пользователя: {str(e)}"
 
