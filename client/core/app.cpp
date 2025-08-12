@@ -27,7 +27,7 @@ void App::run()
     engine->rootContext()->setContextProperty("appController", appController);
     engine->load(QUrl(QStringLiteral("qrc:/kanemoot/ui/App.qml")));
     if (engine->rootObjects().isEmpty()) {
-        LOG(Logging::Critical, "Failed to load QML");
+        LOG(Logging::Critical, "Не удалось загрузить QML");
         qFatal("Failed to load QML");
     }
     appController->start();

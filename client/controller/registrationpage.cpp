@@ -10,7 +10,7 @@ void RegistrationPage::init()
     QObject *root = getRootObject();
 
     if (!root) {
-        qWarning() << "LoginPage: root object is null!";
+        LOG(Logging::Critical, "RegistrationPage: объект root не инициализован");
         return;
     }
 

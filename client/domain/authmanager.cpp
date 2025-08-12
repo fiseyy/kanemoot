@@ -2,6 +2,7 @@
 #include "network/websocketclient.h"
 #include "core/errorhandler.h"
 #include "core/apiendpoints.h"
+#include "utils/logging.h"
 
 AuthManager::AuthManager(QObject *parent)
     : QObject(parent)
@@ -56,6 +57,7 @@ void AuthManager::onMessageReceived(const QString &text)
     QJsonDocument doc = QJsonDocument::fromJson(text.toUtf8());
     if (!doc.isObject()) {
         emit authFailed("Неверный формат ответа сервера");
+        LOG(Logging::Debug, "Неверный формат ответа сервера. Полученный ответ сервера: " + text.toUtf8());
         return;
     }
     QJsonObject obj = doc.object();

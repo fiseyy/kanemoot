@@ -1,16 +1,17 @@
-#include "errorhandler.h"
-
+#include "core/errorhandler.h"
+#include "utils/logging.h"
 void ErrorHandler::init(QQmlApplicationEngine *engine) { m_engine = engine; }
 
 void ErrorHandler::showError(const QString &title, const QString &message) {
     if (!m_engine || m_engine->rootObjects().isEmpty()) {
-        qWarning() << "ErrorHandler: engine not initialized or rootObjects empty";
+        LOG(Logging::Critical, "ErrorHandler: engine не инициализирован или объекты root пусты");
         return;
     }
 
-    QObject *rootObj = m_engine->rootObjects().first();
+    const QList<QObject *> rootObjects = m_engine->rootObjects();
+    QObject *rootObj = rootObjects.first();
     if (!rootObj) {
-        qWarning() << "ErrorHandler: root object is null";
+        LOG(Logging::Warning, "ErrorHandler: объект root не иницализирован");
         return;
     }
 
@@ -19,7 +20,7 @@ void ErrorHandler::showError(const QString &title, const QString &message) {
                                              Q_ARG(QVariant, QVariant(message)));
 
     if (!invoked) {
-        qWarning() << "ErrorHandler: failed to invoke handleError";
+        LOG(Logging::Critical, "ErrorHandler: не удалось вызвать handleError");
     }
 }
 

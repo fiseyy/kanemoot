@@ -1,6 +1,7 @@
 #include "controller/appcontroller.h"
 #include "controller/loginpage.h"
 #include "controller/registrationpage.h"
+#include "utils/logging.h"
 
 AppController::AppController(QObject *parent, QQmlApplicationEngine* engine)
     : QObject(parent), engine(engine)
@@ -25,21 +26,21 @@ void AppController::setCurrentPage(BasePage *newPage)
     connect(newPage, &BasePage::requestPageChange, this, &AppController::onPageChangeRequested);
 
     if (!engine) {
-        qWarning() << "QML Engine is null";
+        LOG(Logging::Critical, "Engine QML не инициализирован");
         return;
     }
 
     QQmlComponent component(engine, QUrl(newPage->qmlPath()));
 
     if (component.status() != QQmlComponent::Ready) {
-        qWarning() << "QML Component Error:" << component.errorString();
+        LOG(Logging::Critical, "Ошибка компонента QML: " + component.errorString());
         return;
     }
 
     QObject* obj = component.create();
 
     if (!obj) {
-        qWarning() << "Failed to create page QML";
+        LOG(Logging::Critical, "Не удалось создать QML-страницу");
         return;
     }
 
@@ -48,10 +49,10 @@ void AppController::setCurrentPage(BasePage *newPage)
     QQuickWindow* rootWindow = qobject_cast<QQuickWindow*>(rootWindowObj);
 
     if (!pageItem || !rootWindow) {
-        qWarning() << "Invalid page or window object";
-        qDebug() << "pageItem:" << pageItem;
-        qDebug() << "rootWindowObj:" << rootWindowObj;
-        qDebug() << "rootWindow:" << rootWindow;
+        LOG(Logging::Warning, "Недопустимый объект страницы или окна");
+        LOG(Logging::Debug, QString("pageItem: %1").arg(pageItem ? pageItem->objectName() : "null"));
+        LOG(Logging::Debug, QString("rootWindowObj: %1").arg(pageItem ? rootWindowObj->objectName() : "null"));
+        LOG(Logging::Debug, QString("rootWindow: %1").arg(pageItem ? rootWindow->objectName() : "null"));
         return;
     }
 

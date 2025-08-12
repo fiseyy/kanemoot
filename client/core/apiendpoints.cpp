@@ -1,4 +1,5 @@
 #include "core/apiendpoints.h"
+#include "utils/logging.h"
 
 ApiEndpoints &ApiEndpoints::instance() {
     static ApiEndpoints instance;
@@ -19,7 +20,7 @@ QUrl ApiEndpoints::getEndpoint(const QString &service) const {
     if (m_endpoints.contains(service)) {
         return m_endpoints[service];
     }
-    qWarning("Unknown service: %s", qPrintable(service));
+    LOG(Logging::Warning, QString("Неизвестный сервис: %1").arg(service));
     return QUrl();
 }
 

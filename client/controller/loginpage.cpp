@@ -2,7 +2,6 @@
 #include "core/errorhandler.h"
 #include "utils/logging.h"
 #include "utils/authvalidator.h"
-#include "network/websocketclient.h"
 
 LoginPage::LoginPage(QObject *parent) {
     m_authmgr = new AuthManager(this);
@@ -18,7 +17,7 @@ void LoginPage::init()
     QObject *root = getRootObject();
 
     if (!root) {
-        qWarning() << "LoginPage: root object is null!";
+        LOG(Logging::Critical, "LoginPage: объект root не инициализован");
         return;
     }
 
