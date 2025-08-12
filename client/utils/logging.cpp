@@ -71,7 +71,7 @@ void Logging::log(LogLevel level, const QString& message) {
 
   outStream << logMessage << "\n";
   outStream.flush();
-  qDebug() << logMessage;
+  qDebug() << logMessage.toUtf8().constData();
   if(level >= Logging::Warning) {
       ErrorHandler::instance().showError(levelStr, message);
   }
