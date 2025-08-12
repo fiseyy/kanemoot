@@ -1,6 +1,7 @@
 #include "domain/authmanager.h"
 #include "network/websocketclient.h"
 #include "core/errorhandler.h"
+#include "core/apiendpoints.h"
 
 AuthManager::AuthManager(QObject *parent)
     : QObject(parent)
@@ -39,7 +40,8 @@ void AuthManager::tryAuth(const QString &login, const QString &password)
     if (m_socket->getState() == QAbstractSocket::ConnectedState) {
         m_socket->sendMessage(m_pendingRequest);
     } else {
-        m_socket->connectToServer(QUrl("wss://auth-service.kanemoot.ru/ws"));
+        ApiEndpoints& api_endpoint = ApiEndpoints::instance();
+        m_socket->connectToServer(api_endpoint.getEndpoint("auth"));
     }
 }
 

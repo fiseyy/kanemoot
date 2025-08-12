@@ -46,6 +46,7 @@ qt_add_qml_module(appkanemoot
     SOURCES utils/authvalidator.h utils/authvalidator.cpp
     SOURCES network/websocketclient.h network/websocketclient.cpp
     SOURCES domain/authmanager.h domain/authmanager.cpp
+    SOURCES core/apiendpoints.h core/apiendpoints.cpp
 
 )
 

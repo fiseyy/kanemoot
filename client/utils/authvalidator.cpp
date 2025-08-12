@@ -39,10 +39,6 @@ QString AuthValidator::validateEmail(const QString &email) {
 
 ValidationResult AuthValidator::validateLogin(const QString &username, const QString &password)
 {
-    // if (username.isEmpty() || password.isEmpty()) {
-    //     return {false, "логин и/или пароль не могут быть пусты"};
-    // }
-
     QStringList emptyFields = {};
 
     auto addToEmpty = [&emptyFields](const QString &fieldName, const QString &fieldValue){
