@@ -22,3 +22,12 @@ QUrl ApiEndpoints::getEndpoint(const QString &service) const {
     qWarning("Unknown service: %s", qPrintable(service));
     return QUrl();
 }
+
+QString ApiEndpoints::getServiceName(const QUrl &url) const {
+    for (auto it = m_endpoints.begin(); it != m_endpoints.end(); ++it) {
+        if (it.value() == url) {
+            return it.key();
+        }
+    }
+    return "unknown";
+}

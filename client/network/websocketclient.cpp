@@ -1,5 +1,6 @@
 #include "network/websocketclient.h"
 #include "utils/logging.h"
+#include "core/apiendpoints.h"
 
 WebSocketClient::WebSocketClient(QObject *parent)
     : QObject(parent)
@@ -13,21 +14,17 @@ WebSocketClient::WebSocketClient(QObject *parent)
         emit errorOccurred(error_str);
     });
 
-    connect(this, &WebSocketClient::messageReceived, this, [this](QString msg){
-        qDebug() << "Получено:" << msg;
-    });
-
-    LOG(Logging::Debug, "WebSocketClient constructed");
+    LOG(Logging::Debug, "WebSocketClient инициализирован");
 }
 
 WebSocketClient::~WebSocketClient()
 {
     if (m_webSocket.state() == QAbstractSocket::ConnectedState ||
         m_webSocket.state() == QAbstractSocket::ConnectingState) {
-        LOG(Logging::Info, "Closing WebSocket connection in destructor");
+        LOG(Logging::Info, "Закрытие WebSocket-соединения в деструкторе");
         m_webSocket.close();
     } else {
-        LOG(Logging::Debug, "WebSocket already closed in destructor");
+        LOG(Logging::Debug, "WebSocket-соединение уже закрыто (деструктор)");
     }
 }
 
@@ -36,14 +33,14 @@ void WebSocketClient::connectToServer(const QUrl &url)
     QSslConfiguration sslConf = QSslConfiguration::defaultConfiguration();
     m_webSocket.setSslConfiguration(sslConf);
     m_webSocket.open(url);
-    LOG(Logging::Info, "Connecting to WebSocket server: " + url.toString());
+    QString service = ApiEndpoints::instance().getServiceName(QUrl(url.toString()));
+    LOG(Logging::Info, QString("Подключение к WebSocket-серверу (сервис: %1)").arg(service));
 }
 
 void WebSocketClient::sendMessage(const QString &message)
 {
     if (m_webSocket.state() == QAbstractSocket::ConnectedState) {
         m_webSocket.sendTextMessage(message);
-        LOG(Logging::Debug, "Sent message: " + message);
     } else {
         LOG(Logging::Warning, "Сервер временно недоступен. Повторите попытку позже.");
         qDebug() << m_webSocket.state();
@@ -54,9 +51,9 @@ void WebSocketClient::disconnect()
 {
     if (m_webSocket.state() == QAbstractSocket::ConnectedState) {
         m_webSocket.close();
-        LOG(Logging::Info, "Manually closed WebSocket connection");
+        LOG(Logging::Info, "WebSocket-соединение закрыто вручную");
     } else {
-        LOG(Logging::Debug, "WebSocket already disconnected");
+        LOG(Logging::Debug, "WebSocket-соединение уже закрыто (disconnect)");
     }
 }
 
