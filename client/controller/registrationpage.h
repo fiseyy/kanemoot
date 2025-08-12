@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include "controller/basepage.h"
+#include "domain/authmanager.h"
 
 class RegistrationPage : public BasePage {
     Q_OBJECT
@@ -16,6 +17,7 @@ public:
 
 private:
     void fail(const QString& error);
+    AuthManager* m_authmgr = nullptr;
 
 signals:
     void regSuccessful();

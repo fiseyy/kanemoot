@@ -45,6 +45,29 @@ void AuthManager::tryAuth(const QString &login, const QString &password)
     }
 }
 
+void AuthManager::tryReg(const QString &login, const QString &password, const QString &email)
+{
+    if (m_socket && m_socket->getState() == QAbstractSocket::ConnectingState) {
+        ErrorHandler::instance().showError("Предупреждение", "Подключение уже выполняется. Подождите.");
+        return;
+    }
+
+    QJsonObject obj;
+    obj["action"] = "reg";
+    obj["user"] = login;
+    obj["password"] = password;
+    obj["email"] = email;
+
+    QJsonDocument doc(obj);
+    m_pendingRequest = doc.toJson(QJsonDocument::Compact);
+
+    if (m_socket->getState() == QAbstractSocket::ConnectedState) {
+        m_socket->sendMessage(m_pendingRequest);
+    } else {
+        m_socket->connectToServer(ApiEndpoints::instance().getEndpoint("auth"));
+    }
+}
+
 void AuthManager::onConnected()
 {
     if (!m_pendingRequest.isEmpty()) {

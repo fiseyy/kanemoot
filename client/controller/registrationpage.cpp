@@ -3,7 +3,14 @@
 #include "utils/logging.h"
 #include "utils/authvalidator.h"
 
-RegistrationPage::RegistrationPage(QObject *parent) {}
+RegistrationPage::RegistrationPage(QObject *parent) {
+    m_authmgr = new AuthManager(this);
+
+    connect(m_authmgr, &AuthManager::authSucceeded, this, &RegistrationPage::regSuccessful);
+    connect(m_authmgr, &AuthManager::authFailed, this, [this](const QString& error){
+        fail(error);
+    });
+}
 
 void RegistrationPage::init()
 {
@@ -42,8 +49,7 @@ void RegistrationPage::onRegAttemped(const QString &username, const QString &pas
         fail(validator_result.errorMessage);
         return;
     }
-
-    emit regSuccessful();
+    m_authmgr->tryReg(username, password, email);
 }
 
 void RegistrationPage::loginRedirect()

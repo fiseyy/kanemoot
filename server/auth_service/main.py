@@ -1,17 +1,44 @@
 from aiohttp import web
 import json
+from models import *
+from database import *
 
 
-def auth(action, login, password):
+def auth(action, login, password, email=""):
+    """
+    Обработка аутентификации и регистрации.
+    Возвращает словарь с результатом операции.
+    """
     data = {
-        "success": "false",
+        "success": False,
         "error": "",
     }
+
     if action == "login":
-        if login == "admin" and password == "admin":
-            data["success"] = "true"
+        # Проверка аутентификации пользователя
+        if authenticate_user(login, password):
+            data["success"] = True
         else:
-            data["error"] = "неправильный логин и/или пароль"
+            data["error"] = "Неправильный логин и/или пароль"
+
+    elif action == "reg":
+        if not login or not password or not email:
+            data["error"] = "Необходимо указать логин, пароль и email"
+            return data
+
+        db = SessionLocal()
+        existing_user = db.query(User).filter(User.username == login).first()
+        db.close()
+
+        if existing_user:
+            data["error"] = "Пользователь с таким логином уже существует"
+            return data
+
+        try:
+            create_user(login, password)
+            data["success"] = True
+        except Exception as e:
+            data["error"] = f"Ошибка при создании пользователя: {str(e)}"
 
     return data
 
@@ -35,12 +62,14 @@ async def websocket_handler(request):
                 data = json.loads(msg.data)
                 print(f"\n[Сервер] Получен словарь: {data}")
 
-                await ws.send_str(
-                    json.dumps(
-                        auth(data.get("action"), data.get("user"), data.get("password"))
-                    )
+                response_data = auth(
+                    data.get("action"),
+                    data.get("user"),
+                    data.get("password"),
+                    data.get("email", "")
                 )
 
+                await ws.send_str(json.dumps(response_data))
                 print(f"[Сервер] Отправлен ответ клиенту")
 
             except json.JSONDecodeError:
