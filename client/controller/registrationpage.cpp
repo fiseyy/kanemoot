@@ -22,7 +22,7 @@ void RegistrationPage::init()
     }
 
     connect(root, SIGNAL(loginRedirectRequested()), this, SLOT(loginRedirect()));
-    connect(root, SIGNAL(regAttemped(QString, QString, QString)), this, SLOT(onRegAttemped(QString, QString, QString)));
+    connect(root, SIGNAL(regAttemped(QString,QString,QString)), this, SLOT(onRegAttemped(QString,QString,QString)));
     connect(this, SIGNAL(regSuccessful()), this, SLOT(chatRedirect()));
 }
 
