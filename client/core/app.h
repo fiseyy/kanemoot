@@ -19,6 +19,8 @@ public:
 private:
     void setupLogging();
     void setupDependencies();
+    void setupSettings();
+    void setupSecureStorage();
 
     QQmlApplicationEngine* engine = nullptr;
     AppController* appController = nullptr;

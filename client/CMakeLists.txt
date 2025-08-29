@@ -16,7 +16,7 @@ find_package(Qt6 REQUIRED COMPONENTS
 )
 find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
-
+find_package(Qt6 REQUIRED COMPONENTS Core)
 
 qt_add_executable(appkanemoot
     main.cpp
@@ -47,6 +47,10 @@ qt_add_qml_module(appkanemoot
     SOURCES network/websocketclient.h network/websocketclient.cpp
     SOURCES domain/authmanager.h domain/authmanager.cpp
     SOURCES core/apiendpoints.h core/apiendpoints.cpp
+    SOURCES controller/chatpage.h controller/chatpage.cpp
+    QML_FILES ui/pages/ChatPage.qml
+    SOURCES core/securestorage.h core/securestorage.cpp
+    SOURCES core/settingsmanager.h core/settingsmanager.cpp
 
 )
 
@@ -72,6 +76,7 @@ target_link_libraries(appkanemoot
     Qt6::WebSockets
     Qt6::Network
 )
+target_link_libraries(appkanemoot PRIVATE Qt6::Core)
 target_link_libraries(appkanemoot PRIVATE Qt6::Core)
 target_link_libraries(appkanemoot PRIVATE Qt6::Core)
 target_link_libraries(appkanemoot PRIVATE Qt6::Core)

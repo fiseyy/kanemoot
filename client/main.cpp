@@ -4,7 +4,6 @@
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
-
     App application;
     application.init();
     application.run();

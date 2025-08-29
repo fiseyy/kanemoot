@@ -1,6 +1,7 @@
 #include "controller/appcontroller.h"
 #include "controller/loginpage.h"
 #include "controller/registrationpage.h"
+#include "controller/chatpage.h"
 #include "utils/logging.h"
 
 AppController::AppController(QObject *parent, QQmlApplicationEngine* engine)
@@ -75,6 +76,7 @@ void AppController::onPageChangeRequested(int newPageId)
     switch(newPageId) {
         case Page_Login: newPage = new LoginPage(this); break;
         case Page_Register: newPage = new RegistrationPage(this); break;
+        case Page_Chat: newPage = new ChatPage(this); break;
     }
     if (newPage != nullptr) setCurrentPage(newPage);
 }
