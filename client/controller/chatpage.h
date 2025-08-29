@@ -13,10 +13,13 @@ public:
     void cleanup() override;
 
     QString qmlPath() const override;
-
+signals:
+    void connectedToChat();
 private:
     void fail(const QString& error);
 
+    void setTheme(bool useLightTheme);
+    QObject *currentTheme() const;
 };
 
 #endif // CHATPAGE_H

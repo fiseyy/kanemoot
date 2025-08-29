@@ -31,11 +31,39 @@ void App::run()
         LOG(Logging::Critical, "Не удалось загрузить QML");
         qFatal("Failed to load QML");
     }
+    setTheme(true);
     appController->start();
     ErrorHandler::instance().init(engine);
 }
 
 QQmlApplicationEngine *App::getEngine() const { return engine; }
+
+void App::setTheme(bool useLightTheme) {
+    if (!engine || engine->rootObjects().isEmpty()) {
+        LOG(Logging::Warning, "Не удалось установить тему: QML не загружен");
+        return;
+    }
+
+    QObject* rootItem = engine->rootObjects().first();
+    if (!rootItem) return;
+
+    QObject* theme = nullptr;
+    if (useLightTheme) {
+        QQmlComponent component(engine, QUrl("qrc:/kanemoot/ui/themes/Light.qml"));
+        theme = component.create();
+    } else {
+        QQmlComponent component(engine, QUrl("qrc:/kanemoot/ui/themes/Dark.qml"));
+        theme = component.create();
+    }
+
+    if (!theme) {
+        LOG(Logging::Critical, "Не удалось создать объект темы!");
+        return;
+    }
+
+    rootItem->setProperty("currentTheme", QVariant::fromValue(theme));
+}
+
 
 void App::setupLogging()
 {
@@ -46,6 +74,8 @@ void App::setupDependencies()
 {
     setupSettings();
     setupSecureStorage();
+    qmlRegisterSingletonType(QUrl("qrc:/kanemoot/ui/themes/Dark.qml"), "Themes", 1, 0, "DarkTheme");
+    qmlRegisterSingletonType(QUrl("qrc:/kanemoot/ui/themes/Light.qml"), "Themes", 1, 0, "LightTheme");
 }
 
 void App::setupSettings() {

@@ -25,6 +25,7 @@ public:
 
     void setRootObject(QObject* obj) { m_rootObject = obj; }
     QObject* getRootObject() const { return m_rootObject; }
+
 signals:
     void requestPageChange(int pageId);
 protected:

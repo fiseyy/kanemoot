@@ -1,316 +1,130 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import "../components" as Components
+import Themes 1.0
 
 Item {
-    id: chatPage
     anchors.fill: parent
+    id: root
+    property var currentTheme: DarkTheme
 
     Rectangle {
         anchors.fill: parent
-        color: "#222"
+        color: currentTheme.loadingBackground
+    }
 
-        // Левая панель
-        Rectangle {
-            id: leftPanel
-            width: 66
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
-            anchors.left: parent.left
-            color: "#272729"
+    Components.ChatPageComponent { id: chatPageContent; visible: false; currentTheme: root.currentTheme }
+
+    Rectangle {
+        id: loadingPage
+        objectName: "loadingPage"
+        anchors.fill: parent
+
+        Item {
+            id: logoContainer
+            width: 150
+            height: 150
+            anchors.centerIn: parent
 
             Image {
-                id: kanemootLogo
-                anchors.top: parent.top
-                anchors.left: parent.left
-                anchors.leftMargin: 5
-                anchors.topMargin: 7
-                width: 56
-                height: 56
-                source: "qrc:///assets/logo.png"
+                id: logoBase
+                source: currentTheme.logoIcon
+                anchors.fill: parent
                 fillMode: Image.PreserveAspectFit
-                smooth: true
+                opacity: 1.0
+            }
+
+            SequentialAnimation {
+                id: logoAnim
+                loops: Animation.Infinite
+
+                NumberAnimation { target: logoBase; property: "opacity"; from: 1.0; to: 0.2; duration: 1000; easing.type: Easing.InOutQuad }
+                PauseAnimation { duration: 50 }
+                NumberAnimation { target: logoBase; property: "opacity"; from: 0.2; to: 1.0; duration: 1000; easing.type: Easing.InOutQuad }
+                PauseAnimation { duration: 300 }
+
+                Component.onCompleted: start()
             }
         }
 
-        // Средняя панель
-        Rectangle {
-            id: middlePanel
-            width: 336
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
-            anchors.left: leftPanel.right
-            color: "#242424"
-            Rectangle {
-                id: searchRectangle
-                anchors.top: middlePanel.top
-                anchors.left: middlePanel.left
-                anchors.topMargin: 13
-                anchors.leftMargin: 4
-                color: "#383838"
-                radius: 8
-                width: 278
-                height: 46
-                Image {
-                    id: searchIcon
-                    anchors.top: searchRectangle.top
-                    anchors.left: searchRectangle.left
-                    width: 27
-                    height: 27
-                    anchors.leftMargin: 10
-                    anchors.topMargin: 9
-                    fillMode: Image.PreserveAspectFit
-                    source: "qrc:///assets/search.svg"
-                    smooth: true
-                }
+        Item {
+            id: funFactContainer
+            anchors.top: logoContainer.bottom
+            anchors.horizontalCenter: logoContainer.horizontalCenter
+            width: parent.width
+            height: 60
+
+            Column {
+                anchors.fill: parent
+                anchors.margins: 5
+                spacing: 4
+
+                // Заголовок
                 Text {
-                    id: searchText
-                    anchors.top: searchRectangle.top
-                    anchors.left: searchRectangle.left
-                    font.family: "Inter"
-                    color: "#999"
-                    font.pixelSize: 14
-                    anchors.leftMargin: 42
-                    anchors.topMargin: 14
-                    text: "Search"
+                    text: "Знаете ли вы?"
+                    color: currentTheme.loadingColor
+                    font.pixelSize: 16
+                    font.bold: true
+                    anchors.horizontalCenter: parent.horizontalCenter
                 }
-                Rectangle {
-                    id: hotkeyRectangle
-                    anchors.top: searchRectangle.top
-                    anchors.left: searchRectangle.left
-                    anchors.leftMargin: 211
-                    anchors.topMargin: 5
-                    color: "#333333"
-                    width: 61
-                    height: 35
-                    radius: 5
-                    Text {
-                        id: hotkeyText
-                        anchors.top: hotkeyRectangle.top
-                        anchors.left: hotkeyRectangle.left
-                        font.family: "Inter"
-                        color: "#888888"
-                        font.pixelSize: 14
-                        anchors.leftMargin: 5
-                        anchors.topMargin: 9
-                        text: "Ctrl + K"
+
+                // Основной факт
+                Text {
+                    id: funFact
+                    text: funFact.facts[Math.floor(Math.random() * funFact.facts.length)]
+                    color: currentTheme.loadingColor
+                    font.pixelSize: 14
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    wrapMode: Text.Wrap
+                    property var facts: [
+                        "Эмодзи появились в 1982 году.",
+                        "Каждую минуту в мире отправляется более 200 миллионов сообщений!",
+                        "Wi-Fi был изобретён не для интернета, а для безопасной связи с кассами.",
+                        "Если бы интернет был страной, он был бы третьей по численности населения.",
+                        "Первый веб-браузер назывался WorldWideWeb и появился в 1990 году.",
+                        "Слово 'spam' для нежелательной почты произошло от одноимённого комедийного скетча Monty Python.",
+                        "Первая SMS была отправлена в 1992 году и содержала текст 'Merry Christmas'.",
+                        "Около 80% интернет-трафика приходится на видеоконтент.",
+                        "Электронная почта старше Всемирной паутины — ей уже больше 50 лет.",
+                        "На Земле насчитывается более 4,7 миллиарда интернет-пользователей.",
+                        "Каждую секунду отправляется более 40 тысяч твитов.",
+                        "Электронные смайлы были впервые предложены как наборы символов :) и :( в 1982 году.",
+                        "IoT уже насчитывает более 14 миллиардов подключённых устройств.",
+                        "Первая камера для видеозвонков была создана ещё в 1964 году для компьютерной лаборатории в Кембридже."
+                    ]
+
+
+                    Timer {
+                        interval: 10000
+                        running: true
+                        repeat: true
+                        onTriggered: funFact.text = funFact.facts[Math.floor(Math.random() * funFact.facts.length)]
                     }
                 }
             }
-
-            Rectangle {
-                id: discoverRectangle
-                anchors.left: middlePanel.left
-                anchors.top: middlePanel.top
-                anchors.leftMargin: 286
-                anchors.topMargin: 13
-                width: 46
-                height: 46
-                radius: 7
-                color: "#383838"
-                Image {
-                    id: discoverIcon
-                    anchors.top: discoverRectangle.top
-                    anchors.left: discoverRectangle.left
-                    width: 28
-                    height: 28
-                    anchors.leftMargin: 9
-                    anchors.topMargin: 9
-                    fillMode: Image.PreserveAspectFit
-                    source: "qrc:///assets/explore.svg"
-                    smooth: true
-                }
-            }
-            Text {
-                id: dmText
-                anchors.left: middlePanel.left
-                anchors.top: middlePanel.top
-                anchors.leftMargin: 14
-                anchors.topMargin: 78
-                font.family: "Inter"
-                color: "#A7A7A7"
-                font.pixelSize: 14
-                text: "Direct Messages"
-            }
-
-            // DMS
-
-            Rectangle {
-                id: myInfoRectangle
-                anchors.top: parent.top
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.topMargin: 634
-                height: 72
-                color: "#292929"
-                Rectangle {
-                    id: myAvatarRectangle
-                    radius: 8
-                    anchors.top: myInfoRectangle.top
-                    anchors.left: myInfoRectangle.left
-                    anchors.topMargin: 8
-                    anchors.leftMargin: 8
-                    width: 55
-                    height: 55
-                    color: "#E0E0E0"
-                    Image {
-                        id: myAvatar
-                        anchors.fill: parent
-                        // source: ""
-                        smooth: true
-                    }
-                }
-                Text {
-                    id: myNickname
-                    anchors.top: parent.top
-                    anchors.left: parent.left
-                    font.family: "Inter"
-                    font.pixelSize: 20
-                    font.weight: Font.Medium
-                    color: "#FFF"
-                    text: "Test"
-                    anchors.topMargin: 15
-                    anchors.leftMargin: 71
-                }
-                Text {
-                    id: myStatusText
-                    anchors.top: parent.top
-                    anchors.left: parent.left
-                    font.family: "Inter"
-                    font.pixelSize: 15
-                    font.weight: Font.Regular
-                    color: "#FFC300" // в зависимости от статуса
-                    anchors.topMargin: 39
-                    anchors.leftMargin: 71
-                    text: "Non-active" // временно
-                }
-                Rectangle {
-                    id: myStatusIcon
-                    anchors.top: parent.top
-                    anchors.left: parent.left
-                    anchors.topMargin: 47
-                    anchors.leftMargin: 47
-                    width: 16
-                    height: 16
-                    radius: width / 2
-                    color: "#FFC300"
-                }
-                Image {
-                    id: muteMicroBtn
-                    anchors.top: parent.top
-                    anchors.left: parent.left
-                    anchors.topMargin: 26
-                    anchors.leftMargin: 212
-                    width: 25
-                    height: 25
-                    source: "qrc:///assets/mic.svg"
-                    fillMode: Image.PreserveAspectFit
-                    smooth: true
-                }
-                Image {
-                    id: muteHeadsetBtn
-                    anchors.top: parent.top
-                    anchors.left: parent.left
-                    anchors.topMargin: 26
-                    anchors.leftMargin: 251
-                    width: 25
-                    height: 25
-                    source: "qrc:///assets/headset.svg"
-                    fillMode: Image.PreserveAspectFit
-                    smooth: true
-                }
-                Image {
-                    id: settingsBtn
-                    anchors.top: parent.top
-                    anchors.left: parent.left
-                    anchors.topMargin: 26
-                    anchors.leftMargin: 290
-                    width: 25
-                    height: 25
-                    source: "qrc:///assets/settings_old.svg"
-                    fillMode: Image.PreserveAspectFit
-                    smooth: true
-                }
-            }
-
         }
 
-        // Правая панель
-        Rectangle {
-            id: rightPanel
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
-            anchors.left: middlePanel.right
-            anchors.right: parent.right
-            color: "#1e1e1e"
-            Rectangle {
-                id: chatInfoRectangle // будь то инфо о человеке, или открытом канале сервера
-                anchors.top: parent.top
-                anchors.left: parent.left
-                anchors.right: parent.right
-                height: 72
-                color: "#262626"
-            }
-            Rectangle {
-                id: sendRectangle
-                anchors.top: parent.top
-                anchors.right: parent.right
-                anchors.left: parent.left
-                anchors.leftMargin: 6
-                anchors.rightMargin: 14
-                anchors.topMargin: 648
-                color: "#292929"
-                radius: 15
-                height: 40
-                Text {
-                    id: sendText
-                    text: "Send a message..."
-                    font.family: "Inter"
-                    font.weight: Font.Regular
-                    font.pixelSize: 14
-                    color: "#C0C0C0"
-                    anchors.top: parent.top
-                    anchors.left: parent.left
-                    anchors.topMargin: 11
-                    anchors.leftMargin: 11
-                }
-                Image {
-                    id: emojiBtn
-                    anchors.top: parent.top
-                    anchors.left: parent.left
-                    anchors.topMargin: 8
-                    anchors.leftMargin: 705
-                    width: 24
-                    height: 24
-                    source: "qrc:///assets/Emoji.svg"
-                    fillMode: Image.PreserveAspectFit
-                    smooth: true
-                }
-                Image {
-                    id: addFileBtn
-                    anchors.top: parent.top
-                    anchors.left: parent.left
-                    anchors.topMargin: 8
-                    anchors.leftMargin: 740
-                    width: 24
-                    height: 24
-                    source: "qrc:///assets/File.svg"
-                    fillMode: Image.PreserveAspectFit
-                    smooth: true
-                }
-                Image {
-                    id: sendBtn
-                    anchors.top: parent.top
-                    anchors.left: parent.left
-                    anchors.topMargin: 8
-                    anchors.leftMargin: 775
-                    width: 24
-                    height: 24
-                    source: "qrc:///assets/send.svg"
-                    fillMode: Image.PreserveAspectFit
-                    smooth: true
-                }
-            }
+        function hide() {
+            // Плавное скрытие loadingPage
+            var anim = Qt.createQmlObject('import QtQuick 2.0; NumberAnimation { property: "opacity"; duration: 500 }', loadingPage);
+            anim.target = loadingPage;
+            anim.from = loadingPage.opacity;
+            anim.to = 0;
+            anim.onStopped.connect(function() {
+                loadingPage.visible = false;
+
+                // Появление chatPageContent
+                chatPageContent.opacity = 0;
+                chatPageContent.visible = true;
+                var fadeIn = Qt.createQmlObject('import QtQuick 2.0; NumberAnimation { property: "opacity"; duration: 500 }', chatPageContent);
+                fadeIn.target = chatPageContent;
+                fadeIn.from = 0;
+                fadeIn.to = 1;
+                fadeIn.start();
+            });
+            anim.start();
         }
+
+
     }
 }

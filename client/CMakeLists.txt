@@ -51,6 +51,10 @@ qt_add_qml_module(appkanemoot
     QML_FILES ui/pages/ChatPage.qml
     SOURCES core/securestorage.h core/securestorage.cpp
     SOURCES core/settingsmanager.h core/settingsmanager.cpp
+    QML_FILES ui/themes/Dark.qml
+    QML_FILES ui/themes/Light.qml
+    QML_FILES
+    QML_FILES ui/components/ChatPageComponent.qml
 
 )
 

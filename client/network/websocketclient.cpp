@@ -19,13 +19,8 @@ WebSocketClient::WebSocketClient(QObject *parent)
 
 WebSocketClient::~WebSocketClient()
 {
-    if (m_webSocket.state() == QAbstractSocket::ConnectedState ||
-        m_webSocket.state() == QAbstractSocket::ConnectingState) {
-        LOG(Logging::Info, "Закрытие WebSocket-соединения в деструкторе");
-        m_webSocket.close();
-    } else {
-        LOG(Logging::Debug, "WebSocket-соединение уже закрыто (деструктор)");
-    }
+    if (m_webSocket.state() != QAbstractSocket::UnconnectedState)
+        m_webSocket.abort();  // сразу рвёт SSL и сокет
 }
 
 void WebSocketClient::connectToServer(const QUrl &url)

@@ -6,6 +6,10 @@
 #include <QCoreApplication>
 #include <QQmlContext>
 #include <QResource>
+#include <QQmlComponent>
+#include <QQuickItem>
+#include <QQmlProperty>
+
 #include "controller/appcontroller.h"
 
 class App : public QObject {
@@ -16,6 +20,7 @@ public:
     void init();
     void run();
     QQmlApplicationEngine* getEngine() const;
+    void setTheme(bool useLightTheme);
 private:
     void setupLogging();
     void setupDependencies();

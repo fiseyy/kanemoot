@@ -4,27 +4,25 @@
         <file>assets/icons/toggle_on.svg</file>
         <file>assets/icons/logo.png</file>
         <file>assets/icons/error.png</file>
-        <file>index.html</file>
-        <file>assets/account.svg</file>
-        <file>assets/call.svg</file>
-        <file>assets/Emoji.svg</file>
-        <file>assets/explore.svg</file>
-        <file>assets/File.svg</file>
-        <file>assets/headset.svg</file>
-        <file>assets/headset-off.svg</file>
-        <file>assets/home.svg</file>
-        <file>assets/home_custom.svg</file>
-        <file>assets/icons8-menu.svg</file>
-        <file>assets/info.svg</file>
         <file>assets/logo.png</file>
-        <file>assets/mic.svg</file>
-        <file>assets/mic-off.svg</file>
-        <file>assets/non-active.svg</file>
-        <file>assets/non-active_old.svg</file>
-        <file>assets/search.svg</file>
-        <file>assets/send.svg</file>
-        <file>assets/settings.svg</file>
-        <file>assets/settings_old.svg</file>
-        <file>assets/settings2.svg</file>
+        <file>assets/dark/discover.svg</file>
+        <file>assets/dark/emoji.svg</file>
+        <file>assets/dark/file.svg</file>
+        <file>assets/dark/headset.svg</file>
+        <file>assets/dark/mute.svg</file>
+        <file>assets/dark/search.svg</file>
+        <file>assets/dark/send.svg</file>
+        <file>assets/dark/settings.svg</file>
+        <file>assets/light/discover.svg</file>
+        <file>assets/light/emoji.svg</file>
+        <file>assets/light/file.svg</file>
+        <file>assets/light/headset.svg</file>
+        <file>assets/light/mute.svg</file>
+        <file>assets/light/search.svg</file>
+        <file>assets/light/send.svg</file>
+        <file>assets/light/settings.svg</file>
+        <file>assets/logo_white.png</file>
+        <file>assets/logo_black.svg</file>
+        <file>assets/logo_white.svg</file>
     </qresource>
 </RCC>
