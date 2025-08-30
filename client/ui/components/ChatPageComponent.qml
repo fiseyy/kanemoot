@@ -29,9 +29,10 @@ Item {
                 anchors.topMargin: 7
                 width: 56
                 height: 56
-                source: "qrc:///assets/logo.png"
+                source: currentTheme.smallLogoIcon
                 fillMode: Image.PreserveAspectFit
                 smooth: true
+                layer.enabled: true
             }
         }
 

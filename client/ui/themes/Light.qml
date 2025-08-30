@@ -40,5 +40,6 @@ QtObject {
 
     property color loadingBackground: "#F0F0F0"
     property color loadingColor: "#000000"
-    property string logoIcon: "qrc:///assets/logo_black.svg"
+    property string logoIcon: "qrc:///assets/logo_black.png"
+    property string smallLogoIcon: "qrc:///assets/logo_black56.png"
 }

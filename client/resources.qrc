@@ -24,5 +24,8 @@
         <file>assets/logo_white.png</file>
         <file>assets/logo_black.svg</file>
         <file>assets/logo_white.svg</file>
+        <file>assets/logo_black.png</file>
+        <file>assets/logo_black56.png</file>
+        <file>assets/logo_white56.png</file>
     </qresource>
 </RCC>

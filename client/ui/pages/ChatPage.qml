@@ -31,7 +31,9 @@ Item {
                 source: currentTheme.logoIcon
                 anchors.fill: parent
                 fillMode: Image.PreserveAspectFit
+                layer.enabled: true
                 opacity: 1.0
+                smooth: true
             }
 
             SequentialAnimation {

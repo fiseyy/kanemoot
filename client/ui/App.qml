@@ -9,7 +9,6 @@ ApplicationWindow {
     minimumHeight: 600
     visible: true
     title: qsTr("KANEMOOT")
-    property var currentTheme: Themes.DarkTheme
     ErrorToastManager {
         id: errorToastManager
         anchors.fill: parent
