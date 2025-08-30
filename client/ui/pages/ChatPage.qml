@@ -19,7 +19,7 @@ Item {
         id: loadingPage
         objectName: "loadingPage"
         anchors.fill: parent
-
+        color: currentTheme.loadingBackground
         Item {
             id: logoContainer
             width: 150

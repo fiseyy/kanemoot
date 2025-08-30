@@ -15,7 +15,7 @@ void ChatPage::init()
         return;
     }
     QObject* loadingPage = root->findChild<QObject*>("loadingPage");
-    setTheme(true);
+    setTheme(false);
     connect(this, &ChatPage::connectedToChat, [loadingPage]() {
         if (loadingPage) {
             QMetaObject::invokeMethod(loadingPage, "hide");
