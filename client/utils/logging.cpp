@@ -4,6 +4,7 @@
 #include <QStandardPaths>
 #include "utils/logging.h"
 #include "core/errorhandler.h"
+#include "core/systemfatalerror.h"
 
 Logging::Logging(QObject* parent) : QObject(parent) {
   QString logDirPath;
@@ -72,8 +73,10 @@ void Logging::log(LogLevel level, const QString& message) {
   outStream << logMessage << "\n";
   outStream.flush();
   qDebug() << logMessage.toUtf8().constData();
-  if(level >= Logging::Warning) {
+  if(level >= Logging::Warning && level != Logging::Fatal) {
       ErrorHandler::instance().showError(levelStr, message);
+  }  else if(level == Logging::Fatal) {
+      SystemFatalError::show(message);
   }
 }
 
@@ -87,6 +90,8 @@ QString Logging::logLevelToString(LogLevel level) {
       return "WARNING";
     case Critical:
       return "CRITICAL";
+    case Fatal:
+      return "FATAL";
     default:
       return "UNKNOWN";
   }

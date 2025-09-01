@@ -23,7 +23,7 @@ class Logging : public QObject {
    * @enum LogLevel
    * Уровни логирования, поддерживаемые в классе Logging.
    */
-  enum LogLevel { Debug, Info, Warning, Critical };
+  enum LogLevel { Debug, Info, Warning, Critical, Fatal };
 
   /**
    * @brief Возвращает единственный экземпляр логгера.

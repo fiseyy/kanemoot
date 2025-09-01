@@ -22,6 +22,12 @@ qt_add_executable(appkanemoot
     main.cpp
 )
 
+if(APPLE)
+    set(MACOS_SOURCES core/SystemFatalMacOSError.mm)
+else()
+    set(MACOS_SOURCES)
+endif()
+
 qt_add_qml_module(appkanemoot
     URI kanemoot
     VERSION 1.0
@@ -55,6 +61,7 @@ qt_add_qml_module(appkanemoot
     QML_FILES ui/themes/Light.qml
     QML_FILES
     QML_FILES ui/components/ChatPageComponent.qml
+    SOURCES core/systemfatalerror.h core/systemfatalerror.cpp ${MACOS_SOURCES}
 
 )
 

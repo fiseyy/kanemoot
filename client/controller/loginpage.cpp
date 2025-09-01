@@ -48,7 +48,6 @@ void LoginPage::onLoginButtonClicked(const QString &username, const QString &pas
         fail(validator_result.errorMessage);
         return;
     }
-
     m_authmgr->tryAuth(username, password);
 }
 
