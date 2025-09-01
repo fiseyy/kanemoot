@@ -1,6 +1,7 @@
 #include "network/websocketclient.h"
 #include "utils/logging.h"
 #include "core/apiendpoints.h"
+#include "core/errorcode.h"
 
 WebSocketClient::WebSocketClient(QObject *parent)
     : QObject(parent)
@@ -14,7 +15,7 @@ WebSocketClient::WebSocketClient(QObject *parent)
         emit errorOccurred(error_str);
     });
 
-    LOG(Logging::Debug, "WebSocketClient инициализирован");
+    Logging::instance().log(Logging::Debug, "WebSocketClient инициализирован");
 }
 
 WebSocketClient::~WebSocketClient()
@@ -29,7 +30,7 @@ void WebSocketClient::connectToServer(const QUrl &url)
     m_webSocket.setSslConfiguration(sslConf);
     m_webSocket.open(url);
     QString service = ApiEndpoints::instance().getServiceName(QUrl(url.toString()));
-    LOG(Logging::Info, QString("Подключение к WebSocket-серверу (сервис: %1)").arg(service));
+    Logging::instance().log(Logging::Info, QString("Подключение к WebSocket-серверу (сервис: %1)").arg(service));
 }
 
 void WebSocketClient::sendMessage(const QString &message)
@@ -37,7 +38,8 @@ void WebSocketClient::sendMessage(const QString &message)
     if (m_webSocket.state() == QAbstractSocket::ConnectedState) {
         m_webSocket.sendTextMessage(message);
     } else {
-        LOG(Logging::Warning, "Сервер временно недоступен. Повторите попытку позже.");
+        // LOG(Logging::Warning, "Сервер временно недоступен. Повторите попытку позже.");
+        LOG(Logging::Warning, ErrorCode::make(ErrorCode::Network, 0x04, ErrorCode::WebSocketClient), "");
         qDebug() << m_webSocket.state();
     }
 }
@@ -46,9 +48,9 @@ void WebSocketClient::disconnect()
 {
     if (m_webSocket.state() == QAbstractSocket::ConnectedState) {
         m_webSocket.close();
-        LOG(Logging::Info, "WebSocket-соединение закрыто вручную");
+        Logging::instance().log(Logging::Info, "WebSocket-соединение закрыто вручную");
     } else {
-        LOG(Logging::Debug, "WebSocket-соединение уже закрыто (disconnect)");
+        Logging::instance().log(Logging::Debug, "WebSocket-соединение уже закрыто (disconnect)");
     }
 }
 

@@ -2,6 +2,7 @@
 #include "core/errorhandler.h"
 #include "utils/logging.h"
 #include "utils/authvalidator.h"
+#include "core/errorcode.h"
 
 LoginPage::LoginPage(QObject *parent) {
     m_authmgr = new AuthManager(this);
@@ -17,7 +18,8 @@ void LoginPage::init()
     QObject *root = getRootObject();
 
     if (!root) {
-        LOG(Logging::Critical, "LoginPage: объект root не инициализован");
+        // LOG(Logging::Critical, "LoginPage: объект root не инициализован");
+        LOG(Logging::Critical, ErrorCode::make(ErrorCode::UI, 0x06, ErrorCode::LoginPage), "");
         return;
     }
 
@@ -37,7 +39,7 @@ QString LoginPage::qmlPath() const {
 
 void LoginPage::fail(const QString &error)
 {
-    LOG(Logging::Debug, "Не удалось войти в аккаунт: " + error);
+    Logging::instance().log(Logging::Debug, "Не удалось войти в аккаунт: " + error);
     ErrorHandler::instance().showError("Ошибка", "Не удалось войти в аккаунт: " + error);
 }
 

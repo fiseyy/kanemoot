@@ -1,5 +1,6 @@
 #include "controller/chatpage.h"
 #include "utils/logging.h"
+#include "core/errorcode.h"
 #include <QTimer>
 #include <QQmlComponent>
 #include <qqmlcontext.h>
@@ -11,7 +12,8 @@ void ChatPage::init()
 {
     QObject* root = getRootObject();
     if (!root) {
-        LOG(Logging::Critical, "ChatPage: объект root не инициализирован");
+        // LOG(Logging::Critical, "ChatPage: объект root не инициализирован");
+        LOG(Logging::Critical, ErrorCode::make(ErrorCode::UI, 0x06, ErrorCode::ChatPage), "");
         return;
     }
     QObject* loadingPage = root->findChild<QObject*>("loadingPage");
@@ -21,7 +23,8 @@ void ChatPage::init()
             QMetaObject::invokeMethod(loadingPage, "hide");
         }
         else {
-            LOG(Logging::Critical, "loadingPage не объявлен!");
+            // LOG(Logging::Critical, "loadingPage не объявлен!");
+            LOG(Logging::Critical, ErrorCode::make(ErrorCode::UI, 0x0A, ErrorCode::ChatPage), "loadingPage не объявлен");
         }
     });
 
@@ -46,7 +49,8 @@ void ChatPage::setTheme(bool useLightTheme) {
                                              : "qrc:/kanemoot/ui/themes/Dark.qml"));
     QObject* theme = component.create();
     if (!theme) {
-        LOG(Logging::Critical, "Не удалось создать объект темы!");
+        // LOG(Logging::Critical, "Не удалось создать объект темы!");
+        LOG(Logging::Critical, ErrorCode::make(ErrorCode::UI, 0x05, ErrorCode::ChatPage), "");
         return;
     }
 

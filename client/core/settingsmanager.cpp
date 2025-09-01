@@ -1,4 +1,5 @@
 #include "core/settingsmanager.h"
+#include "core/errorcode.h"
 
 SettingsManager::SettingsManager(const QString &appName, const QString &orgName)
     : m_settings(orgName, appName)

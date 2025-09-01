@@ -2,6 +2,7 @@
 #include "core/errorhandler.h"
 #include "utils/logging.h"
 #include "utils/authvalidator.h"
+#include "core/errorcode.h"
 
 RegistrationPage::RegistrationPage(QObject *parent) {
     m_authmgr = new AuthManager(this);
@@ -17,7 +18,8 @@ void RegistrationPage::init()
     QObject *root = getRootObject();
 
     if (!root) {
-        LOG(Logging::Critical, "RegistrationPage: объект root не инициализован");
+        // LOG(Logging::Critical, "RegistrationPage: объект root не инициализован");
+        LOG(Logging::Critical, ErrorCode::make(ErrorCode::UI, 0x06, ErrorCode::RegistrationPage), "");
         return;
     }
 
@@ -38,7 +40,7 @@ QString RegistrationPage::qmlPath() const
 
 void RegistrationPage::fail(const QString &error)
 {
-    LOG(Logging::Debug, "Не удалось зарегистрировать аккаунт: " + error);
+    Logging::instance().log(Logging::Debug, "Не удалось зарегистрировать аккаунт: " + error);
     ErrorHandler::instance().showError("Ошибка", "Не удалось зарегистрировать аккаунт: " + error);
 }
 

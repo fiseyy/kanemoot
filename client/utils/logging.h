@@ -7,7 +7,7 @@
 #include <QTextStream>
 #include <QMutex>
 #include <QMutexLocker>
-
+#include <cstdint>
 /**
  * @class Logging
  * @brief Класс для логирования сообщений в программе.
@@ -38,6 +38,8 @@ class Logging : public QObject {
    */
   void log(LogLevel level, const QString& message);
 
+  void log(LogLevel level, uint32_t code, const QString &details = QString());
+
   /**
    * @brief Устанавливает уровень логирования.
    * @param level Новый уровень логирования.
@@ -57,6 +59,10 @@ class Logging : public QObject {
   ~Logging();
 
  private:
+  QMap<int, QString> errorDictionary = {
+      {0x00101111, "Пользователь заблокирован"}
+  };
+
   QFile logFile;          ///< Файл для хранения логов.
   QTextStream outStream;  ///< Поток вывода для логов.
   LogLevel currentLevel = Info;  ///< Текущий уровень логирования.
@@ -76,7 +82,8 @@ class Logging : public QObject {
  * @param level Уровень логирования.
  * @param msg Сообщение для логирования.
  */
-#define LOG(level, msg) Logging::instance().log(Logging::level, msg)
+// #define LOG(level, msg) Logging::instance().log(Logging::level, msg)
+#define LOG(level, code, msg) Logging::instance().log(Logging::level, code, msg)
 #define SET_LOG_LEVEL(level) Logging::instance().setLogLevel(Logging::level)
 
 #endif

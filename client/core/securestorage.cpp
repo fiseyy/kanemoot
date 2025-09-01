@@ -1,4 +1,5 @@
 #include "core/securestorage.h"
+#include "core/errorcode.h"
 
 #include <QStandardPaths>
 #include <QFile>

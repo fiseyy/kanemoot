@@ -5,6 +5,7 @@
 #include "utils/logging.h"
 #include "core/errorhandler.h"
 #include "core/systemfatalerror.h"
+#include "core/errorcode.h"
 
 Logging::Logging(QObject* parent) : QObject(parent) {
   QString logDirPath;
@@ -79,6 +80,14 @@ void Logging::log(LogLevel level, const QString& message) {
       SystemFatalError::show(message);
   }
 }
+
+void Logging::log(LogLevel level, uint32_t code, const QString &details) {
+    QString text = ErrorCode::decode(code);
+    if (!details.isEmpty()) text += ": " + details;
+    log(level, text);
+}
+
+
 
 QString Logging::logLevelToString(LogLevel level) {
   switch (level) {
