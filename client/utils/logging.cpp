@@ -59,6 +59,11 @@ void Logging::setLogLevel(LogLevel level) {
   currentLevel = level;
 }
 
+Logging::LogLevel Logging::getLogLevel()
+{
+  return this->currentLevel;
+}
+
 void Logging::log(LogLevel level, const QString& message) {
     QMutexLocker locker(&mutex);
   if (level < currentLevel || !logFile.isOpen()) {

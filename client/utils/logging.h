@@ -45,6 +45,10 @@ class Logging : public QObject {
    * @param level Новый уровень логирования.
    */
   void setLogLevel(LogLevel level);
+  /**
+   * @brief Выдает текущий уроверь логирования.
+   */
+  LogLevel getLogLevel();
 
   /**
    * @brief Конструктор.

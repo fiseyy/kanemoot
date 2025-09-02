@@ -14,20 +14,23 @@ AuthManager::AuthManager(QObject *parent)
     connect(m_socket, &WebSocketClient::errorOccurred, this, [this](const QString &error) {
         QString userFriendly;
         if (error.contains("502")) {
-            userFriendly = "Сервер временно недоступен. Повторите попытку позже.";
+            // userFriendly = "Сервер временно недоступен. Повторите попытку позже.";
+            LOG(Logging::Warning, ErrorCode::make(ErrorCode::Network, 0x04, ErrorCode::AuthManager), "");
         } else if (error.contains("SSL") || error.contains("handshake")) {
-            userFriendly = "Ошибка шифрования. Проверьте подключение.";
+            // userFriendly = "Ошибка шифрования. Проверьте подключение.";
+            LOG(Logging::Warning, ErrorCode::make(ErrorCode::Network, 0x05, ErrorCode::AuthManager), "");
         } else {
             userFriendly = error;
+            LOG(Logging::Warning, ErrorCode::make(ErrorCode::Network, 0x01, ErrorCode::AuthManager), userFriendly);
         }
-        ErrorHandler::instance().showError("Ошибка", userFriendly);
     });
 }
 
 void AuthManager::tryAuth(const QString &login, const QString &password)
 {
     if (m_socket && m_socket->getState() == QAbstractSocket::ConnectingState) {
-        ErrorHandler::instance().showError("Предупреждение", "Подключение уже выполняется. Подождите.");
+        // ErrorHandler::instance().showError("Предупреждение", "Подключение уже выполняется. Подождите.");
+        LOG(Logging::Warning, ErrorCode::make(ErrorCode::Network, 0x03, ErrorCode::AuthManager), "");
         return;
     }
 
@@ -49,7 +52,8 @@ void AuthManager::tryAuth(const QString &login, const QString &password)
 void AuthManager::tryReg(const QString &login, const QString &password, const QString &email)
 {
     if (m_socket && m_socket->getState() == QAbstractSocket::ConnectingState) {
-        ErrorHandler::instance().showError("Предупреждение", "Подключение уже выполняется. Подождите.");
+        // ErrorHandler::instance().showError("Предупреждение", "Подключение уже выполняется. Подождите.");
+        LOG(Logging::Warning, ErrorCode::make(ErrorCode::Network, 0x03, ErrorCode::AuthManager), "");
         return;
     }
 
