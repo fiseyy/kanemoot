@@ -2,9 +2,6 @@
 #include <QCoreApplication>
 #if defined(Q_OS_WIN)
 #include <windows.h>
-#elif defined(Q_OS_MACOS)
-#import <Cocoa/Cocoa.h>
-#include "core/SystemFatalMacOSError.mm"
 #elif defined(Q_OS_LINUX)
 #include <gtk/gtk.h>
 #endif

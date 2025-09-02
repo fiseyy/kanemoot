@@ -1,9 +1,7 @@
-#if defined(Q_OS_MACOS)
+#include "core/systemfatalerror.h"
 #import <Cocoa/Cocoa.h>
 
-class MacOSError {
-public:
-    static void showError(const QString &message){
+void MacOSError::showError(const QString &message){
         @autoreleasepool {
             NSAlert *alert = [[NSAlert alloc] init];
             [alert setMessageText:@"Fatal Error"];
@@ -11,7 +9,4 @@ public:
             [alert addButtonWithTitle:@"OK"];
             [alert runModal];
         }
-    }
-};
-
-#endif
+ }
