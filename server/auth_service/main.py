@@ -1,23 +1,34 @@
+import jwt
+from datetime import datetime, timedelta
 from aiohttp import web
 import json
 from models import *
 from database import *
 
 
-def auth(action, login, password, email=""):
-    """
-    Обработка аутентификации и регистрации.
-    Возвращает словарь с результатом операции.
-    """
-    data = {
-        "success": "false",
-        "error": "",
+SECRET = "Fiseyy_JWT_Secret!"  # используем одинаковый секрет, что и в chat-service
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 1440  # 1 день жизни токена
+def create_jwt(user_id: int):
+    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    payload = {
+        "user_id": user_id,
+        "exp": expire
     }
+    token = jwt.encode(payload, SECRET, algorithm=ALGORITHM)
+    return token
+
+def auth(action, login, password, email=""):
+    data = {"success": False, "error": "", "jwt": ""}
 
     if action == "login":
-        # Проверка аутентификации пользователя
-        if authenticate_user(login, password):
-            data["success"] = "true"
+        db = SessionLocal()
+        user = db.query(User).filter(User.username == login).first()
+        db.close()
+
+        if user and bcrypt.checkpw(password.encode("utf-8"), user.password_hash.encode("utf-8")):
+            data["success"] = True
+            data["jwt"] = create_jwt(user.id)  # выдаём JWT
         else:
             data["error"] = "Неправильный логин и/или пароль"
 
@@ -36,11 +47,12 @@ def auth(action, login, password, email=""):
 
         try:
             create_user(login, password)
-            data["success"] = "true"
+            data["success"] = True
         except Exception as e:
             data["error"] = f"Ошибка при создании пользователя: {str(e)}"
 
     return data
+
 
 
 async def websocket_handler(request):

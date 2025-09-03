@@ -4,7 +4,7 @@ import jwt
 from services.chat_service import ChatService
 from services.server_service import ServerService
 
-SECRET = "твой_секрет"
+SECRET = "Fiseyy_JWT_Secret!"
 
 chat_service = ChatService()
 server_service = ServerService()
