@@ -1,6 +1,5 @@
 #include "network/websocketclient.h"
 #include "utils/logging.h"
-#include "core/apiendpoints.h"
 #include "core/errorcode.h"
 
 WebSocketClient::WebSocketClient(QString serviceName, QObject *parent)
@@ -29,8 +28,7 @@ void WebSocketClient::connectToServer(const QUrl &url)
     QSslConfiguration sslConf = QSslConfiguration::defaultConfiguration();
     m_webSocket.setSslConfiguration(sslConf);
     m_webSocket.open(url);
-    QString service = ApiEndpoints::instance().getServiceName(QUrl(url.toString()));
-    Logging::instance().log(Logging::Info, QString("Подключение к WebSocket-серверу (сервис: %1)").arg(service));
+    Logging::instance().log(Logging::Info, QString("(" + m_serviceName + ") Подключение к WebSocket-серверу"));
 }
 
 void WebSocketClient::sendMessage(const QString &message)
@@ -48,9 +46,9 @@ void WebSocketClient::disconnect()
 {
     if (m_webSocket.state() == QAbstractSocket::ConnectedState) {
         m_webSocket.close();
-        Logging::instance().log(Logging::Info, "WebSocket-соединение закрыто вручную");
+        Logging::instance().log(Logging::Info, "(" + m_serviceName + ") WebSocket-соединение закрыто вручную");
     } else {
-        Logging::instance().log(Logging::Debug, "WebSocket-соединение уже закрыто (disconnect)");
+        Logging::instance().log(Logging::Debug, "(" + m_serviceName + ") WebSocket-соединение уже закрыто (disconnect)");
     }
 }
 

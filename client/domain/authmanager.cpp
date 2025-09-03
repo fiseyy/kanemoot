@@ -135,4 +135,5 @@ void AuthManager::onMessageReceived(const QString &text)
         QString raw = obj.value("error").toString();
         emit authFailed(raw);
     }
+    this->m_socket->disconnect();
 }
