@@ -4,6 +4,7 @@
 #include "controller/chatpage.h"
 #include "utils/logging.h"
 #include "core/errorcode.h"
+#include "core/securestorage.h"
 
 AppController::AppController(QObject *parent, QQmlApplicationEngine* engine)
     : QObject(parent), engine(engine)
@@ -65,6 +66,18 @@ void AppController::start()
 {
     LoginPage* loginPage = new LoginPage(this);
     setCurrentPage(loginPage);
+    auto jwt_opt = SecureStorage::instance().getValue("jwt-token");
+    QString jwt_token;
+
+    if (jwt_opt.has_value()) {
+        jwt_token = jwt_opt.value();
+    } else {
+        jwt_token = "";
+    }
+    qDebug() << "JWT: " << jwt_token;
+    if (!jwt_token.isEmpty()) {
+        loginPage->tryAutoLogIn(jwt_token);
+    }
 }
 
 void AppController::onPageChangeRequested(int newPageId)

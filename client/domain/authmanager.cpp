@@ -80,7 +80,7 @@ void AuthManager::tryAutoLogin(const QString &jwt_token)
     }
 
     QJsonObject obj;
-    obj["action"] = "login";
+    obj["action"] = "auto_jwt_login";
     obj["jwt"] = jwt_token;
 
     QJsonDocument doc(obj);
@@ -102,6 +102,7 @@ void AuthManager::onConnected()
 
 void AuthManager::onMessageReceived(const QString &text)
 {
+    qDebug() << text;
     QJsonDocument doc = QJsonDocument::fromJson(text.toUtf8());
     if (!doc.isObject()) {
         emit authFailed("Неверный формат ответа сервера");
@@ -110,11 +111,17 @@ void AuthManager::onMessageReceived(const QString &text)
         return;
     }
     QJsonObject obj = doc.object();
-    bool success = obj.value("success").toString() == "true";
     QString jwt_token = obj.value("jwt").toString();
+    bool success = obj.value("success").toBool() == true;
     if (success) {
-        emit authSucceeded();
         SecureStorage::instance().setValue("jwt-token", jwt_token);
+        auto optToken = SecureStorage::instance().getValue("jwt-token");
+        if (optToken)
+            qDebug() << "JWT-токен записан. Значение в Storage:" << *optToken;
+        else
+            qDebug() << "JWT-токен записан, но не удалось прочитать значение из Storage";
+
+        emit authSucceeded();
     } else {
         QString raw = obj.value("error").toString();
         emit authFailed(raw);

@@ -14,7 +14,7 @@ public:
 
     void init() override;
     void cleanup() override;
-
+    void tryAutoLogIn(const QString& jwt);
     QString qmlPath() const override;
 
 private:

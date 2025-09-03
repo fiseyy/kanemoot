@@ -3,6 +3,8 @@
 
 #include <QStandardPaths>
 #include <QFile>
+#include <QString>
+#include <optional>
 #include <QDir>
 
 #ifdef _WIN32
@@ -10,6 +12,7 @@
 #include <wincred.h>
 #else
 #include <QCryptographicHash>
+#include <QProcess>
 #endif
 
 SecureStorage::SecureStorage(const QString &serviceName)
@@ -54,31 +57,32 @@ bool SecureStorage::removeValue(const QString &key)
 #endif
 }
 
-
 #ifdef _WIN32
+
 bool SecureStorage::writeWindowsCredential(const QString &key, const QString &value)
 {
-    CREDENTIAL cred{};
+    CREDENTIALW cred{};
+    std::wstring targetName = (m_serviceName + ":" + key).toStdWString();
     QByteArray valBytes = value.toUtf8();
-    QByteArray targetName = (m_serviceName + ":" + key).toUtf8();
 
     cred.Type = CRED_TYPE_GENERIC;
-    cred.TargetName = (LPWSTR)targetName.constData();
-    cred.CredentialBlob = (LPBYTE)valBytes.constData();
-    cred.CredentialBlobSize = valBytes.size();
+    cred.TargetName = const_cast<LPWSTR>(targetName.c_str());
+    cred.CredentialBlob = reinterpret_cast<LPBYTE>(valBytes.data());
+    cred.CredentialBlobSize = static_cast<DWORD>(valBytes.size());
     cred.Persist = CRED_PERSIST_LOCAL_MACHINE;
     cred.UserName = nullptr;
 
-    return CredWriteW(&cred, 0);
+    return CredWriteW(&cred, 0) != FALSE;
 }
 
 std::optional<QString> SecureStorage::readWindowsCredential(const QString &key)
 {
-    QByteArray targetName = (m_serviceName + ":" + key).toUtf8();
-    CREDENTIAL *pcred = nullptr;
-    if (CredReadW((LPCWSTR)targetName.constData(), CRED_TYPE_GENERIC, 0, &pcred))
+    std::wstring targetName = (m_serviceName + ":" + key).toStdWString();
+    CREDENTIALW *pcred = nullptr;
+
+    if (CredReadW(targetName.c_str(), CRED_TYPE_GENERIC, 0, &pcred))
     {
-        QString value = QString::fromUtf8((char*)pcred->CredentialBlob, pcred->CredentialBlobSize);
+        QString value = QString::fromUtf8(reinterpret_cast<char*>(pcred->CredentialBlob), pcred->CredentialBlobSize);
         CredFree(pcred);
         return value;
     }
@@ -87,12 +91,11 @@ std::optional<QString> SecureStorage::readWindowsCredential(const QString &key)
 
 bool SecureStorage::deleteWindowsCredential(const QString &key)
 {
-    QByteArray targetName = (m_serviceName + ":" + key).toUtf8();
-    return CredDeleteW((LPCWSTR)targetName.constData(), CRED_TYPE_GENERIC, 0);
+    std::wstring targetName = (m_serviceName + ":" + key).toStdWString();
+    return CredDeleteW(targetName.c_str(), CRED_TYPE_GENERIC, 0) != FALSE;
 }
 
 #elif defined(Q_OS_MACOS)
-#include <QProcess>
 
 bool SecureStorage::writeMacKeychain(const QString &key, const QString &value)
 {
@@ -127,7 +130,6 @@ bool SecureStorage::deleteMacKeychain(const QString &key)
     return proc.exitCode() == 0;
 }
 
-
 #else // Linux
 
 QString SecureStorage::storageDir() const
@@ -139,7 +141,8 @@ QString SecureStorage::storageDir() const
 
 bool SecureStorage::writeLinuxFile(const QString &key, const QString &value)
 {
-    QString filename = storageDir() + "/" + QString(QCryptographicHash::hash(key.toUtf8(), QCryptographicHash::Sha256).toHex());
+    QString filename = storageDir() + "/" +
+                       QString(QCryptographicHash::hash(key.toUtf8(), QCryptographicHash::Sha256).toHex());
     QFile file(filename);
     if (!file.open(QIODevice::WriteOnly))
         return false;
@@ -151,7 +154,8 @@ bool SecureStorage::writeLinuxFile(const QString &key, const QString &value)
 
 std::optional<QString> SecureStorage::readLinuxFile(const QString &key)
 {
-    QString filename = storageDir() + "/" + QString(QCryptographicHash::hash(key.toUtf8(), QCryptographicHash::Sha256).toHex());
+    QString filename = storageDir() + "/" +
+                       QString(QCryptographicHash::hash(key.toUtf8(), QCryptographicHash::Sha256).toHex());
     QFile file(filename);
     if (!file.exists() || !file.open(QIODevice::ReadOnly))
         return std::nullopt;
@@ -162,9 +166,9 @@ std::optional<QString> SecureStorage::readLinuxFile(const QString &key)
 
 bool SecureStorage::deleteLinuxFile(const QString &key)
 {
-    QString filename = storageDir() + "/" + QString(QCryptographicHash::hash(key.toUtf8(), QCryptographicHash::Sha256).toHex());
+    QString filename = storageDir() + "/" +
+                       QString(QCryptographicHash::hash(key.toUtf8(), QCryptographicHash::Sha256).toHex());
     return QFile::remove(filename);
 }
-
 
 #endif

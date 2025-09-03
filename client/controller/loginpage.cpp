@@ -28,23 +28,16 @@ void LoginPage::init()
     connect(root, SIGNAL(regRedirectRequested()), this, SLOT(regRedirect()));
     connect(this, SIGNAL(loginSuccessful()), this, SLOT(chatRedirect()));
 
-    auto jwt_opt = SecureStorage::instance().getValue("jwt-token");
-    QString jwt_token;
-
-    if (jwt_opt.has_value()) {
-        jwt_token = jwt_opt.value();
-    } else {
-        jwt_token = "";
-    }
-    if (!jwt_token.isEmpty()) {
-        m_authmgr->tryAutoLogin(jwt_token);
-    }
-
 }
 
 void LoginPage::cleanup()
 {
 
+}
+
+void LoginPage::tryAutoLogIn(const QString &jwt)
+{
+    m_authmgr->tryAutoLogin(jwt);
 }
 
 QString LoginPage::qmlPath() const {
