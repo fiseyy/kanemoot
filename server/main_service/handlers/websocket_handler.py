@@ -85,6 +85,26 @@ async def websocket_handler(request):
                     "action": "user_servers",
                     "servers": servers
                 }))
+            elif action == "join_server":
+                url = data.get("url")
+                if not url:
+                    await ws.send_str(json.dumps({"error": "URL required"}))
+                    continue
+
+                success, result = server_service.join_server_by_url(user_id, url)
+                if not success:
+                    await ws.send_str(json.dumps({"error": result}))
+                    continue
+
+                await ws.send_str(json.dumps({
+                    "action": "joined_server",
+                    "server": {
+                        "id": result.id,
+                        "name": result.name,
+                        "avatar_url": result.avatar_url,
+                        "url": result.url
+                    }
+                }))
 
             else:
                 await ws.send_str(json.dumps({"error": "unknown_action"}))

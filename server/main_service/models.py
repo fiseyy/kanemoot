@@ -13,6 +13,7 @@ class Server(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
     avatar_url = Column(String, nullable=True)
+    url = Column(String, unique=True, nullable=False)
 
 class Channel(Base):
     __tablename__ = "channels"

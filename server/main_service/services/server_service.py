@@ -18,3 +18,9 @@ class ServerService:
                 "channels": [{"id": c.id, "name": c.name, "type": c.type} for c in channels]
             })
         return result
+    def join_server_by_url(self, user_id: int, url: str):
+        server = self.server_repo.get_by_url(url)
+        if not server:
+            return False, "Server not found"
+        self.server_repo.add_member(server.id, user_id)
+        return True, server
