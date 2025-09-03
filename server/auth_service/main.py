@@ -61,6 +61,8 @@ def auth(action, login="", password="", email="", token=""):
             payload = jwt.decode(token, SECRET, algorithms=[ALGORITHM])
             user_id = payload["user_id"]
             data["success"] = True
+            data["jwt"] = token
+            data["user_id"] = user_id
         except jwt.ExpiredSignatureError:
             data["error"] = "JWT expired"
         except jwt.InvalidTokenError:
