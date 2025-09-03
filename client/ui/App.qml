@@ -9,7 +9,11 @@ ApplicationWindow {
     minimumHeight: 600
     visible: true
     title: qsTr("KANEMOOT")
-
+    Item {
+        id: pageContainer
+        objectName: "pageContainer"
+        anchors.fill: parent
+    }
     ErrorToastManager {
         id: errorToastManager
         anchors.fill: parent

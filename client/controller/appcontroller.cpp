@@ -20,23 +20,18 @@ void AppController::setCurrentPage(BasePage *newPage)
     connect(newPage, &BasePage::requestPageChange, this, &AppController::onPageChangeRequested);
 
     if (!engine) {
-        // LOG(Logging::Critical, "Engine QML не инициализирован");
         LOG(Logging::Critical, ErrorCode::make(ErrorCode::UI, 0x01, ErrorCode::AppController), "Engine QML не инициализирован");
         return;
     }
 
     QQmlComponent component(engine, QUrl(newPage->qmlPath()));
-
     if (component.status() != QQmlComponent::Ready) {
-        // LOG(Logging::Critical, "Ошибка компонента QML: " + component.errorString());
-        LOG(Logging::Critical, ErrorCode::make(ErrorCode::UI, 0x02, ErrorCode::AppController),component.errorString());
+        LOG(Logging::Critical, ErrorCode::make(ErrorCode::UI, 0x02, ErrorCode::AppController), component.errorString());
         return;
     }
 
     QObject* obj = component.create();
-
     if (!obj) {
-        // LOG(Logging::Critical, "Не удалось создать QML-страницу");
         LOG(Logging::Critical, ErrorCode::make(ErrorCode::UI, 0x03, ErrorCode::AppController), "");
         return;
     }
@@ -46,15 +41,20 @@ void AppController::setCurrentPage(BasePage *newPage)
     QQuickWindow* rootWindow = qobject_cast<QQuickWindow*>(rootWindowObj);
 
     if (!pageItem || !rootWindow) {
-        // LOG(Logging::Warning, "Недопустимый объект страницы или окна");
         LOG(Logging::Warning, ErrorCode::make(ErrorCode::UI, 0x04, ErrorCode::AppController), "");
-        Logging::instance().log(Logging::Debug, QString("pageItem: %1").arg(pageItem ? pageItem->objectName() : "null"));
-        Logging::instance().log(Logging::Debug, QString("rootWindowObj: %1").arg(pageItem ? rootWindowObj->objectName() : "null"));
-        Logging::instance().log(Logging::Debug, QString("rootWindow: %1").arg(pageItem ? rootWindow->objectName() : "null"));
         return;
     }
 
-    pageItem->setParentItem(rootWindow->contentItem());
+    // ищем контейнер
+    QObject* containerObj = rootWindow->findChild<QObject*>("pageContainer");
+    QQuickItem* containerItem = qobject_cast<QQuickItem*>(containerObj);
+    if (!containerItem) {
+        LOG(Logging::Critical, ErrorCode::make(ErrorCode::UI, 0x07, ErrorCode::AppController), "pageContainer не найден");
+        return;
+    }
+
+    // цепляем страницу в контейнер
+    pageItem->setParentItem(containerItem);
 
     newPage->setRootObject(pageItem);
     currentPage = newPage;
