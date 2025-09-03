@@ -5,10 +5,6 @@
 void ErrorHandler::init(QQmlApplicationEngine *engine) { m_engine = engine; }
 
 void ErrorHandler::showError(const QString &title, const QString &message) {
-    // if (!m_engine || m_engine->rootObjects().isEmpty()) {
-    //     // LOG(Logging::Critical, "ErrorHandler: engine не инициализирован или объекты root пусты");
-    //     return;
-    // }
     if(!m_engine) {
         LOG(Logging::Fatal, ErrorCode::make(ErrorCode::UI, 0x01, ErrorCode::ErrorHandler), "");
     }
@@ -18,7 +14,6 @@ void ErrorHandler::showError(const QString &title, const QString &message) {
     const QList<QObject *> rootObjects = m_engine->rootObjects();
     QObject *rootObj = rootObjects.first();
     if (!rootObj) {
-        // LOG(Logging::Warning, "ErrorHandler: объект root не иницализирован");
         LOG(Logging::Fatal, ErrorCode::make(ErrorCode::UI, 0x06, ErrorCode::ErrorHandler), "");
         return;
     }
@@ -28,7 +23,6 @@ void ErrorHandler::showError(const QString &title, const QString &message) {
                                              Q_ARG(QVariant, QVariant(message)));
 
     if (!invoked) {
-        // LOG(Logging::Critical, "ErrorHandler: не удалось вызвать handleError");
         LOG(Logging::Fatal, ErrorCode::make(ErrorCode::UI, 0x09, ErrorCode::ErrorHandler), "Не удалось вызвать handleError");
     }
 }
