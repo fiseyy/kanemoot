@@ -30,4 +30,11 @@ class Message(Base):
     content = Column(Text, nullable=False)
     timestamp = Column(DateTime, default=datetime.utcnow)
 
+class Membership(Base):
+    __tablename__ = "memberships"
+    guild_id = Column(Integer, ForeignKey("servers.id"), primary_key=True)
+    user_id = Column(Integer, primary_key=True)
+    role = Column(String, default="member")  # owner/admin/member
+    joined_at = Column(DateTime, default=datetime.utcnow)
+
 Base.metadata.create_all(bind=engine)
