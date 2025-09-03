@@ -24,8 +24,6 @@ private:
 signals:
     void loginSuccessful();
     void loginFailed(const QString& error);
-    void autoLoginFailed(const QString& error);
-
 public slots:
     void onLoginButtonClicked(const QString& username, const QString& password);
     void regRedirect();

@@ -73,16 +73,18 @@ void AppController::start()
     }
 
     if (!jwt_token.isEmpty()) {
-        Logging::instance().log(Logging::Debug, "Сессия найдена. Попытка восстановить пользователя по сохранённой сессии...");
+        Logging::instance().log(Logging::Info, "Сессия найдена. Попытка восстановить пользователя по сохранённой сессии...");
 
         AuthManager* authmgr = new AuthManager(this);
         connect(authmgr, &AuthManager::authSucceeded, this, [this](){
-            qDebug() << "Пользователь вошел в аккаунт автоматически.";
+            // qDebug() << "Пользователь вошел в аккаунт автоматически.";
+            Logging::instance().log(Logging::Info, "Пользователь восстановлен по JWT.");
             ChatPage* chatPage = new ChatPage(this);
             setCurrentPage(chatPage);
         });
         connect(authmgr, &AuthManager::authFailed, this, [this](){
-            qDebug() << "Пользователь не вошел в аккаунт автоматически.";
+            // qDebug() << "Пользователь не вошел в аккаунт автоматически.";
+            Logging::instance().log(Logging::Info, "Не удалось восстановить пользователя по JWT.");
             LoginPage* loginPage = new LoginPage(this);
             setCurrentPage(loginPage);
         });
