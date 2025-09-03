@@ -11,6 +11,8 @@ def create_user(username, password):
     db.commit()
     db.refresh(user)
     db.close()
+    return user
+
 
 def authenticate_user(username, password):
     db = SessionLocal()

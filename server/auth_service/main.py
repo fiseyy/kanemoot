@@ -46,14 +46,13 @@ def auth(action, login, password, email=""):
             return data
 
         try:
-            create_user(login, password)
+            user = create_user(login, password)  # возвращаем объект пользователя
             data["success"] = True
+            data["jwt"] = create_jwt(user.id)  # выдаём JWT сразу после регистрации
         except Exception as e:
             data["error"] = f"Ошибка при создании пользователя: {str(e)}"
 
     return data
-
-
 
 async def websocket_handler(request):
     """
