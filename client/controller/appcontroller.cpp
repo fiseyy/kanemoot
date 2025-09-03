@@ -65,20 +65,32 @@ void AppController::setCurrentPage(BasePage *newPage)
 void AppController::start()
 {
     LoginPage* loginPage = new LoginPage(this);
-    setCurrentPage(loginPage);
+
     auto jwt_opt = SecureStorage::instance().getValue("jwt-token");
     QString jwt_token;
 
     if (jwt_opt.has_value()) {
         jwt_token = jwt_opt.value();
-    } else {
-        jwt_token = "";
     }
-    qDebug() << "JWT: " << jwt_token;
+
     if (!jwt_token.isEmpty()) {
+        Logging::instance().log(Logging::Debug, "Сессия найдена. Попытка восстановить пользователя по сохранённой сессии...");
+
+        connect(loginPage, &LoginPage::loginSuccessful, this, [this, loginPage]() {
+            Logging::instance().log(Logging::Debug, "Пользователь восстановлен по JWT, открываем главную страницу");
+            ChatPage* chatPage = new ChatPage(this);
+            loginPage->deleteLater();
+            this->setCurrentPage(chatPage);
+        });
+
         loginPage->tryAutoLogIn(jwt_token);
+        return;
     }
+
+    // если JWT нет, показываем страницу логина
+    setCurrentPage(loginPage);
 }
+
 
 void AppController::onPageChangeRequested(int newPageId)
 {

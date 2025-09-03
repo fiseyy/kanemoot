@@ -9,7 +9,7 @@ class WebSocketClient : public QObject {
     Q_OBJECT
 
 public:
-    explicit WebSocketClient(QObject *parent = nullptr);
+    explicit WebSocketClient(QString serviceName = "", QObject *parent = nullptr);
     ~WebSocketClient();
     void connectToServer(const QUrl &url);
     void sendMessage(const QString &message);
@@ -25,6 +25,7 @@ signals:
 
 private:
     QWebSocket m_webSocket;
+    QString m_serviceName;
 };
 
 

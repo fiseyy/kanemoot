@@ -3,8 +3,8 @@
 #include "core/apiendpoints.h"
 #include "core/errorcode.h"
 
-WebSocketClient::WebSocketClient(QObject *parent)
-    : QObject(parent)
+WebSocketClient::WebSocketClient(QString serviceName, QObject *parent)
+    : QObject(parent), m_serviceName(serviceName)
 {
     connect(&m_webSocket, &QWebSocket::connected, this, &WebSocketClient::connected);
     connect(&m_webSocket, &QWebSocket::disconnected, this, &WebSocketClient::disconnected);
@@ -15,7 +15,7 @@ WebSocketClient::WebSocketClient(QObject *parent)
         emit errorOccurred(error_str);
     });
 
-    Logging::instance().log(Logging::Debug, "WebSocketClient инициализирован");
+    Logging::instance().log(Logging::Debug, "(" + m_serviceName + ") WebSocketClient инициализирован");
 }
 
 WebSocketClient::~WebSocketClient()

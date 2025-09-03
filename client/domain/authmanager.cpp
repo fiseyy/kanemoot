@@ -8,7 +8,7 @@
 AuthManager::AuthManager(QObject *parent)
     : QObject(parent)
 {
-    m_socket = new WebSocketClient(this);
+    m_socket = new WebSocketClient("auth", this);
     connect(m_socket, &WebSocketClient::connected, this, &AuthManager::onConnected);
     connect(m_socket, &WebSocketClient::messageReceived, this, &AuthManager::onMessageReceived);
     connect(m_socket, &WebSocketClient::errorOccurred, this, [this](const QString &error) {
@@ -102,7 +102,6 @@ void AuthManager::onConnected()
 
 void AuthManager::onMessageReceived(const QString &text)
 {
-    qDebug() << text;
     QJsonDocument doc = QJsonDocument::fromJson(text.toUtf8());
     if (!doc.isObject()) {
         emit authFailed("Неверный формат ответа сервера");
@@ -117,9 +116,9 @@ void AuthManager::onMessageReceived(const QString &text)
         SecureStorage::instance().setValue("jwt-token", jwt_token);
         auto optToken = SecureStorage::instance().getValue("jwt-token");
         if (optToken)
-            qDebug() << "JWT-токен записан. Значение в Storage:" << *optToken;
+            Logging::instance().log(Logging::Debug, "JWT-токен записан.");
         else
-            qDebug() << "JWT-токен записан, но не удалось прочитать значение из Storage";
+            Logging::instance().log(Logging::Debug, "JWT-токен записан, но не удалось прочитать значение из Storage");
 
         emit authSucceeded();
     } else {

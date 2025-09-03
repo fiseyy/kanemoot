@@ -6,7 +6,7 @@
 
 ChatManager::ChatManager(QObject *parent)
 {
-    m_socket = new WebSocketClient(this);
+    m_socket = new WebSocketClient("chat", this);
     connect(m_socket, &WebSocketClient::connected, this, [this]() {
         emit connected();
         onConnected();
