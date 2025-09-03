@@ -1,9 +1,9 @@
 #include "domain/authmanager.h"
 #include "network/websocketclient.h"
-#include "core/errorhandler.h"
 #include "core/apiendpoints.h"
 #include "utils/logging.h"
 #include "core/errorcode.h"
+#include "core/securestorage.h"
 
 AuthManager::AuthManager(QObject *parent)
     : QObject(parent)
@@ -71,6 +71,28 @@ void AuthManager::tryReg(const QString &login, const QString &password, const QS
     }
 }
 
+void AuthManager::tryAutoLogin(const QString &jwt_token)
+{
+    if (m_socket && m_socket->getState() == QAbstractSocket::ConnectingState) {
+        // ErrorHandler::instance().showError("Предупреждение", "Подключение уже выполняется. Подождите.");
+        LOG(Logging::Warning, ErrorCode::make(ErrorCode::Network, 0x03, ErrorCode::AuthManager), "");
+        return;
+    }
+
+    QJsonObject obj;
+    obj["action"] = "login";
+    obj["jwt"] = jwt_token;
+
+    QJsonDocument doc(obj);
+    m_pendingRequest = doc.toJson(QJsonDocument::Compact);
+
+    if (m_socket->getState() == QAbstractSocket::ConnectedState) {
+        m_socket->sendMessage(m_pendingRequest);
+    } else {
+        m_socket->connectToServer(ApiEndpoints::instance().getEndpoint("auth"));
+    }
+}
+
 void AuthManager::onConnected()
 {
     if (!m_pendingRequest.isEmpty()) {
@@ -89,8 +111,10 @@ void AuthManager::onMessageReceived(const QString &text)
     }
     QJsonObject obj = doc.object();
     bool success = obj.value("success").toString() == "true";
+    QString jwt_token = obj.value("jwt").toString();
     if (success) {
         emit authSucceeded();
+        SecureStorage::instance().setValue("jwt-token", jwt_token);
     } else {
         QString raw = obj.value("error").toString();
         emit authFailed(raw);

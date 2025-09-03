@@ -18,7 +18,7 @@ def create_jwt(user_id: int):
     token = jwt.encode(payload, SECRET, algorithm=ALGORITHM)
     return token
 
-def auth(action, login, password, email=""):
+def auth(action, login="", password="", email="", token=""):
     data = {"success": False, "error": "", "jwt": ""}
 
     if action == "login":
@@ -28,7 +28,7 @@ def auth(action, login, password, email=""):
 
         if user and bcrypt.checkpw(password.encode("utf-8"), user.password_hash.encode("utf-8")):
             data["success"] = True
-            data["jwt"] = create_jwt(user.id)  # выдаём JWT
+            data["jwt"] = create_jwt(user.id)
         else:
             data["error"] = "Неправильный логин и/или пароль"
 
@@ -46,13 +46,30 @@ def auth(action, login, password, email=""):
             return data
 
         try:
-            user = create_user(login, password)  # возвращаем объект пользователя
+            user = create_user(login, password)
             data["success"] = True
-            data["jwt"] = create_jwt(user.id)  # выдаём JWT сразу после регистрации
+            data["jwt"] = create_jwt(user.id)
         except Exception as e:
             data["error"] = f"Ошибка при создании пользователя: {str(e)}"
 
+    elif action == "auto_jwt_login":
+        if not token:
+            data["error"] = "JWT required"
+            return data
+
+        try:
+            payload = jwt.decode(token, SECRET, algorithms=[ALGORITHM])
+            user_id = payload["user_id"]
+            data["success"] = True
+            data["jwt"] = token  # возвращаем тот же токен
+            data["user_id"] = user_id
+        except jwt.ExpiredSignatureError:
+            data["error"] = "JWT expired"
+        except jwt.InvalidTokenError:
+            data["error"] = "Invalid JWT"
+
     return data
+
 
 async def websocket_handler(request):
     """
@@ -74,10 +91,11 @@ async def websocket_handler(request):
                 print(f"\n[Сервер] Получен словарь: {data}")
 
                 response_data = auth(
-                    data.get("action"),
-                    data.get("user"),
-                    data.get("password"),
-                    data.get("email", "")
+                    action=data.get("action"),
+                    login=data.get("user", ""),
+                    password=data.get("password", ""),
+                    email=data.get("email", ""),
+                    token=data.get("jwt", "")
                 )
 
                 await ws.send_str(json.dumps(response_data))

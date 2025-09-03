@@ -3,6 +3,7 @@
 #include "utils/logging.h"
 #include "utils/authvalidator.h"
 #include "core/errorcode.h"
+#include "core/securestorage.h"
 
 LoginPage::LoginPage(QObject *parent) {
     m_authmgr = new AuthManager(this);
@@ -26,6 +27,19 @@ void LoginPage::init()
     connect(root, SIGNAL(loginAttempted(QString,QString)), this, SLOT(onLoginButtonClicked(QString,QString)));
     connect(root, SIGNAL(regRedirectRequested()), this, SLOT(regRedirect()));
     connect(this, SIGNAL(loginSuccessful()), this, SLOT(chatRedirect()));
+
+    auto jwt_opt = SecureStorage::instance().getValue("jwt-token");
+    QString jwt_token;
+
+    if (jwt_opt.has_value()) {
+        jwt_token = jwt_opt.value();
+    } else {
+        jwt_token = "";
+    }
+    if (!jwt_token.isEmpty()) {
+        m_authmgr->tryAutoLogin(jwt_token);
+    }
+
 }
 
 void LoginPage::cleanup()
