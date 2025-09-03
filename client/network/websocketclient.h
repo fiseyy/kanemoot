@@ -15,6 +15,7 @@ public:
     void sendMessage(const QString &message);
     void disconnect();
     QAbstractSocket::SocketState getState();
+    void ping();
 
 signals:
     void connected();

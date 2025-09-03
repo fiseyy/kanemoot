@@ -64,6 +64,11 @@ void ChatManager::onConnected()
     while (!m_pendingMessages.isEmpty()) {
         m_socket->sendMessage(m_pendingMessages.dequeue());
     }
+    QTimer* pingTimer = new QTimer(m_socket);
+    QObject::connect(pingTimer, &QTimer::timeout, [this]() {
+        m_socket->ping();
+    });
+    pingTimer->start(20000);
 }
 
 void ChatManager::onDisconnected()

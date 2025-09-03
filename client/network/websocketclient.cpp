@@ -58,3 +58,8 @@ QAbstractSocket::SocketState WebSocketClient::getState()
 {
     return m_webSocket.state();
 }
+
+void WebSocketClient::ping()
+{
+    m_webSocket.ping();
+}
