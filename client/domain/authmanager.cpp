@@ -12,7 +12,6 @@ AuthManager::AuthManager(QObject *parent)
     connect(m_socket, &WebSocketClient::connected, this, &AuthManager::onConnected);
     connect(m_socket, &WebSocketClient::messageReceived, this, &AuthManager::onMessageReceived);
     connect(m_socket, &WebSocketClient::errorOccurred, this, [this](const QString &error) {
-        QString userFriendly;
         if (error.contains("502")) {
             // userFriendly = "Сервер временно недоступен. Повторите попытку позже.";
             LOG(Logging::Warning, ErrorCode::make(ErrorCode::Network, 0x04, ErrorCode::AuthManager), "");
@@ -20,8 +19,7 @@ AuthManager::AuthManager(QObject *parent)
             // userFriendly = "Ошибка шифрования. Проверьте подключение.";
             LOG(Logging::Warning, ErrorCode::make(ErrorCode::Network, 0x05, ErrorCode::AuthManager), "");
         } else {
-            userFriendly = error;
-            LOG(Logging::Warning, ErrorCode::make(ErrorCode::Network, 0x01, ErrorCode::AuthManager), userFriendly);
+            LOG(Logging::Warning, ErrorCode::make(ErrorCode::Network, 0x01, ErrorCode::AuthManager), error);
         }
     });
 }

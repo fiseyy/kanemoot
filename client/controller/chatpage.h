@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include "controller/basepage.h"
+#include "domain/chatmanager.h"
 
 class ChatPage : public BasePage {
     Q_OBJECT
@@ -20,6 +21,7 @@ private:
 
     void setTheme(bool useLightTheme);
     QObject *currentTheme() const;
+    ChatManager* m_chatmgr = nullptr;
 };
 
 #endif // CHATPAGE_H

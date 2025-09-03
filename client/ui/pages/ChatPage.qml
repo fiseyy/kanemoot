@@ -5,18 +5,20 @@ import Themes 1.0
 
 Item {
     anchors.fill: parent
-    id: root
+    id: chatPage
     property var currentTheme: DarkTheme
 
     Rectangle {
         anchors.fill: parent
         color: currentTheme.loadingBackground
+        z:1
     }
 
-    Components.ChatPageComponent { id: chatPageContent; visible: false; currentTheme: root.currentTheme }
+    Components.ChatPageComponent { z:3; id: chatPageContent; visible: false; currentTheme: chatPage.currentTheme }
 
     Rectangle {
         id: loadingPage
+        z:2
         objectName: "loadingPage"
         anchors.fill: parent
         color: currentTheme.loadingBackground
@@ -126,7 +128,5 @@ Item {
             });
             anim.start();
         }
-
-
     }
 }

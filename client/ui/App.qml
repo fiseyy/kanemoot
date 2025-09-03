@@ -9,11 +9,11 @@ ApplicationWindow {
     minimumHeight: 600
     visible: true
     title: qsTr("KANEMOOT")
+
     ErrorToastManager {
         id: errorToastManager
         anchors.fill: parent
     }
-
     function handleError(title, message) {
         errorToastManager.enqueue(title, message)
     }

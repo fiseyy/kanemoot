@@ -63,6 +63,7 @@ qt_add_qml_module(appkanemoot
     QML_FILES ui/components/ChatPageComponent.qml
     SOURCES core/systemfatalerror.h core/systemfatalerror.cpp ${MACOS_SOURCES}
     SOURCES core/errorcode.h core/errorcode.cpp
+    SOURCES domain/chatmanager.h domain/chatmanager.cpp
 
 )
 

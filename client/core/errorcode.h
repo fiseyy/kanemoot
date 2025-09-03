@@ -10,7 +10,7 @@ public:
     enum Module : uint8_t { AppController = 0x01, ChatPage = 0x02, LoginPage = 0x03, RegistrationPage = 0x04,
                             ApiEndpoints = 0x05, App = 0x06, ErrorHandler = 0x07, SecureStorage = 0x08,
                             SettingsManager = 0x09, SystemFatalError = 0x0A, AuthManager = 0x0B,
-                            WebSocketClient = 0x0C, Logging = 0x0D };
+                            WebSocketClient = 0x0C, Logging = 0x0D, ChatManager = 0x0E };
 
     static constexpr uint32_t make(Category cat, uint8_t errorCode, Module mod, uint8_t flag = 0x00) {
         return (uint32_t(cat) << 24) | (uint32_t(errorCode) << 16) | (uint32_t(mod) << 8) | flag;
@@ -36,7 +36,8 @@ public:
         {0x0A, "SystemFatalError"},
         {0x0B, "AuthManager"},
         {0x0C, "WebSocketClient"},
-        {0x0D, "Logging"}
+        {0x0D, "Logging"},
+        {0x0E, "ChatManager"}
     };
 
     static inline const QMap<uint16_t, QString> errorMessages {

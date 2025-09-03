@@ -1,18 +1,23 @@
 #include "controller/chatpage.h"
 #include "utils/logging.h"
 #include "core/errorcode.h"
+#include "core/apiendpoints.h"
 #include <QTimer>
 #include <QQmlComponent>
 #include <qqmlcontext.h>
 
 ChatPage::ChatPage(QObject *parent) {
+    m_chatmgr = new ChatManager(this);
+    connect(m_chatmgr, &ChatManager::connected, this, &ChatPage::connectedToChat);
+    connect(m_chatmgr, &ChatManager::disconnected, this, [](){
+        Logging::instance().log(Logging::Debug, "Отключено от Chat Service.");
+    });
 }
 
 void ChatPage::init()
 {
     QObject* root = getRootObject();
     if (!root) {
-        // LOG(Logging::Critical, "ChatPage: объект root не инициализирован");
         LOG(Logging::Critical, ErrorCode::make(ErrorCode::UI, 0x06, ErrorCode::ChatPage), "");
         return;
     }
@@ -23,12 +28,11 @@ void ChatPage::init()
             QMetaObject::invokeMethod(loadingPage, "hide");
         }
         else {
-            // LOG(Logging::Critical, "loadingPage не объявлен!");
             LOG(Logging::Critical, ErrorCode::make(ErrorCode::UI, 0x0A, ErrorCode::ChatPage), "loadingPage не объявлен");
         }
     });
 
-    QTimer::singleShot(5000, [this]() { emit connectedToChat(); });
+    m_chatmgr->connectToServer(ApiEndpoints::instance().getEndpoint("chat"));
 }
 
 
@@ -37,7 +41,6 @@ void ChatPage::cleanup()
 
 }
 
-// Устанавливаем тему
 void ChatPage::setTheme(bool useLightTheme) {
     QObject* rootItem = getRootObject();
     if (!rootItem) return;
@@ -57,7 +60,6 @@ void ChatPage::setTheme(bool useLightTheme) {
     rootItem->setProperty("currentTheme", QVariant::fromValue(theme));
 }
 
-// Получаем текущую тему
 QObject* ChatPage::currentTheme() const {
     QObject* rootItem = getRootObject();
     if (!rootItem) return nullptr;

@@ -12,14 +12,6 @@ AppController::AppController(QObject *parent, QQmlApplicationEngine* engine)
 void AppController::setCurrentPage(BasePage *newPage)
 {
     if (currentPage) {
-        if (auto oldRootObj = currentPage->getRootObject()) {
-            if (auto oldRootItem = qobject_cast<QQuickItem*>(oldRootObj)) {
-                oldRootItem->setParentItem(nullptr);
-                oldRootItem->deleteLater();
-            } else {
-                oldRootObj->deleteLater();
-            }
-        }
         currentPage->cleanup();
         currentPage->deleteLater();
         currentPage = nullptr;
