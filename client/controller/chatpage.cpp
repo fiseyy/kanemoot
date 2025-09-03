@@ -2,6 +2,7 @@
 #include "utils/logging.h"
 #include "core/errorcode.h"
 #include "core/apiendpoints.h"
+#include "core/securestorage.h"
 #include <QTimer>
 #include <QQmlComponent>
 #include <qqmlcontext.h>
@@ -33,6 +34,13 @@ void ChatPage::init()
     });
 
     m_chatmgr->connectToServer(ApiEndpoints::instance().getEndpoint("chat"));
+    QString username;
+    auto optUsername = SecureStorage::instance().getValue("username");
+    if(!optUsername) LOG(Logging::Fatal, ErrorCode::make(ErrorCode::System, 0x02, ErrorCode::ChatPage), "");
+    else {
+        username = optUsername.value();
+    }
+    root->setProperty("username", username);
 }
 
 

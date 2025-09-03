@@ -1,4 +1,6 @@
 #include "core/systemfatalerror.h"
+#include <QQmlApplicationEngine>
+#include <QGuiApplication>
 #include <QCoreApplication>
 #if defined(Q_OS_WIN)
 #include <windows.h>
@@ -8,6 +10,16 @@
 
 void SystemFatalError::show(const QString &message)
 {
+    QObject* rootObject = nullptr;
+    if (auto engine = qobject_cast<QQmlApplicationEngine*>(QGuiApplication::instance()->property("qmlEngine").value<QObject*>())) {
+        auto roots = engine->rootObjects();
+        if (!roots.isEmpty()) rootObject = roots.first();
+    }
+
+    if (rootObject) {
+        QMetaObject::invokeMethod(rootObject, "setEnabled", Q_ARG(QVariant, false));
+    }
+
 #if defined(Q_OS_WIN)
     MessageBoxW(nullptr,
                 reinterpret_cast<const wchar_t*>(message.utf16()),

@@ -173,7 +173,7 @@ Item {
                     font.pixelSize: 20
                     font.weight: Font.Medium
                     color: currentTheme.myNickname
-                    text: "Test"
+                    text: chatPage.username
                     anchors.topMargin: 15
                     anchors.leftMargin: 71
                 }

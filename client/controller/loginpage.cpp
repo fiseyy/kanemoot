@@ -9,7 +9,11 @@ LoginPage::LoginPage(QObject *parent) {
     m_authmgr = new AuthManager(this);
 
     connect(m_authmgr, &AuthManager::authSucceeded, this, &LoginPage::loginSuccessful);
-    connect(m_authmgr, &AuthManager::authFailed, this, [this](const QString& error){
+    connect(m_authmgr, &AuthManager::authFailed, this,  [this](const QString& error){
+        if(!error.isEmpty())
+            emit loginFailed(error);
+    });
+    connect(this, &LoginPage::loginFailed, this, [this](const QString& error){
         fail(error);
     });
 }

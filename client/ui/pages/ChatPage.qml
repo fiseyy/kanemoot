@@ -7,6 +7,7 @@ Item {
     anchors.fill: parent
     id: chatPage
     property var currentTheme: DarkTheme
+    property string username: ""
 
     Rectangle {
         anchors.fill: parent

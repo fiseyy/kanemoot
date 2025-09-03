@@ -5,6 +5,7 @@
 #include "utils/logging.h"
 #include "core/errorcode.h"
 #include "core/securestorage.h"
+#include "domain/authmanager.h"
 
 AppController::AppController(QObject *parent, QQmlApplicationEngine* engine)
     : QObject(parent), engine(engine)
@@ -64,8 +65,6 @@ void AppController::setCurrentPage(BasePage *newPage)
 
 void AppController::start()
 {
-    LoginPage* loginPage = new LoginPage(this);
-
     auto jwt_opt = SecureStorage::instance().getValue("jwt-token");
     QString jwt_token;
 
@@ -76,18 +75,21 @@ void AppController::start()
     if (!jwt_token.isEmpty()) {
         Logging::instance().log(Logging::Debug, "Сессия найдена. Попытка восстановить пользователя по сохранённой сессии...");
 
-        connect(loginPage, &LoginPage::loginSuccessful, this, [this, loginPage]() {
-            Logging::instance().log(Logging::Debug, "Пользователь восстановлен по JWT, открываем главную страницу");
+        AuthManager* authmgr = new AuthManager(this);
+        connect(authmgr, &AuthManager::authSucceeded, this, [this](){
+            qDebug() << "Пользователь вошел в аккаунт автоматически.";
             ChatPage* chatPage = new ChatPage(this);
-            loginPage->deleteLater();
-            this->setCurrentPage(chatPage);
+            setCurrentPage(chatPage);
         });
-
-        loginPage->tryAutoLogIn(jwt_token);
+        connect(authmgr, &AuthManager::authFailed, this, [this](){
+            qDebug() << "Пользователь не вошел в аккаунт автоматически.";
+            LoginPage* loginPage = new LoginPage(this);
+            setCurrentPage(loginPage);
+        });
+        authmgr->tryAutoLogin(jwt_token);
         return;
     }
-
-    // если JWT нет, показываем страницу логина
+    LoginPage* loginPage = new LoginPage(this);
     setCurrentPage(loginPage);
 }
 

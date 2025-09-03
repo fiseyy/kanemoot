@@ -25,6 +25,7 @@ private slots:
 private:
     WebSocketClient *m_socket;
     QString m_pendingRequest;
+    QString username;
 };
 
 #endif // AUTHMANAGER_H

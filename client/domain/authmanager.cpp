@@ -21,6 +21,7 @@ AuthManager::AuthManager(QObject *parent)
         } else {
             LOG(Logging::Warning, ErrorCode::make(ErrorCode::Network, 0x01, ErrorCode::AuthManager), error);
         }
+        emit authFailed("");
     });
 }
 
@@ -36,6 +37,7 @@ void AuthManager::tryAuth(const QString &login, const QString &password)
     obj["action"] = "login";
     obj["user"] = login;
     obj["password"] = password;
+    this->username = login;
 
     QJsonDocument doc(obj);
     m_pendingRequest = doc.toJson(QJsonDocument::Compact);
@@ -60,6 +62,7 @@ void AuthManager::tryReg(const QString &login, const QString &password, const QS
     obj["user"] = login;
     obj["password"] = password;
     obj["email"] = email;
+    this->username = login;
 
     QJsonDocument doc(obj);
     m_pendingRequest = doc.toJson(QJsonDocument::Compact);
@@ -119,7 +122,14 @@ void AuthManager::onMessageReceived(const QString &text)
             Logging::instance().log(Logging::Debug, "JWT-токен записан.");
         else
             Logging::instance().log(Logging::Debug, "JWT-токен записан, но не удалось прочитать значение из Storage");
-
+        if(!username.isEmpty()) {
+            SecureStorage::instance().setValue("username", username);
+            auto optUsername = SecureStorage::instance().getValue("username");
+            if(optUsername)
+                Logging::instance().log(Logging::Debug, "Имя пользователя записано.");
+            else
+                Logging::instance().log(Logging::Debug, "Имя пользователя записано, но не удалось прочитать значение из Storage");
+        }
         emit authSucceeded();
     } else {
         QString raw = obj.value("error").toString();
