@@ -65,6 +65,7 @@ void AppController::setCurrentPage(BasePage *newPage)
 
 void AppController::start()
 {
+    Logging::instance().log(Logging::Info, "Пытаюсь восстановить прошлую сессию...");
     auto jwt_opt = SecureStorage::instance().getValue("jwt-token");
     QString jwt_token;
 
@@ -77,20 +78,19 @@ void AppController::start()
 
         AuthManager* authmgr = new AuthManager(this);
         connect(authmgr, &AuthManager::authSucceeded, this, [this](){
-            // qDebug() << "Пользователь вошел в аккаунт автоматически.";
             Logging::instance().log(Logging::Info, "Пользователь восстановлен по JWT.");
             ChatPage* chatPage = new ChatPage(this);
             setCurrentPage(chatPage);
         });
         connect(authmgr, &AuthManager::authFailed, this, [this](){
-            // qDebug() << "Пользователь не вошел в аккаунт автоматически.";
-            Logging::instance().log(Logging::Info, "Не удалось восстановить пользователя по JWT.");
+            Logging::instance().log(Logging::Info, "Не удалось восстановить пользователя по JWT. Открываю страницу авторизации...");
             LoginPage* loginPage = new LoginPage(this);
             setCurrentPage(loginPage);
         });
         authmgr->tryAutoLogin(jwt_token);
         return;
     }
+    Logging::instance().log(Logging::Info, "Сессия не найдена. Открываю страницу авторизации...");
     LoginPage* loginPage = new LoginPage(this);
     setCurrentPage(loginPage);
 }
