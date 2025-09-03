@@ -1,14 +1,16 @@
-from models import SessionLocal, Server, Channel, Message
-
+from models import SessionLocal, Server, Channel, Message, Membership
 class ServerRepository:
     def __init__(self):
         self.db = SessionLocal
 
     def get_user_servers(self, user_id: int):
-        db = self.db()
-        # Здесь пока простой MVP — вернем все сервера, где user_id есть в memberships
-        # Для MVP можно позже добавить таблицу memberships
-        servers = db.query(Server).all()
+        db = SessionLocal()
+        servers = (
+            db.query(Server)
+            .join(Membership, Membership.guild_id == Server.id)
+            .filter(Membership.user_id == user_id)
+            .all()
+        )
         db.close()
         return servers
 
