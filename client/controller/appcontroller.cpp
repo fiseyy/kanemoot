@@ -47,7 +47,6 @@ void AppController::setCurrentPage(BasePage *newPage)
         return;
     }
 
-    // ищем контейнер
     QObject* containerObj = rootWindow->findChild<QObject*>("pageContainer");
     QQuickItem* containerItem = qobject_cast<QQuickItem*>(containerObj);
     if (!containerItem) {
@@ -55,7 +54,6 @@ void AppController::setCurrentPage(BasePage *newPage)
         return;
     }
 
-    // цепляем страницу в контейнер
     pageItem->setParentItem(containerItem);
 
     newPage->setRootObject(pageItem);

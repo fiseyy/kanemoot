@@ -23,10 +23,12 @@ ChatManager::ChatManager(QObject *parent)
         } else {
             LOG(Logging::Warning, ErrorCode::make(ErrorCode::Network, 0x01, ErrorCode::ChatManager), error);
         }
-        QTimer::singleShot(2000, [this]() {
-            m_socket->connectToServer(ApiEndpoints::instance().getEndpoint("chat"));
-        });
     });
+}
+
+void ChatManager::connectToChat()
+{
+    m_socket->connectToServer(ApiEndpoints::instance().getEndpoint("chat"));
 }
 
 void ChatManager::connectToServer(const QUrl &url)
@@ -56,6 +58,14 @@ void ChatManager::sendMessage(const QString &text)
         m_socket->connectToServer(ApiEndpoints::instance().getEndpoint("chat"));
         m_pendingMessages.enqueue(text);
     }
+}
+
+bool ChatManager::isConnected() const {
+    if (!m_socket)
+        return false;
+
+    auto state = m_socket->getState();
+    return state == QAbstractSocket::ConnectedState;
 }
 
 void ChatManager::onConnected()

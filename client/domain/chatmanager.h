@@ -10,8 +10,9 @@ class ChatManager : public QObject {
     Q_OBJECT
 public:
     explicit ChatManager(QObject *parent = nullptr);
-    void connectToServer(const QUrl &url);
+    void connectToChat();
     void sendMessage(const QString &text);
+    bool isConnected() const;
 
 signals:
     void connected();
@@ -25,6 +26,7 @@ private slots:
     void onMessageReceived(const QString &text);
 
 private:
+    void connectToServer(const QUrl &url);
     WebSocketClient *m_socket;
     QQueue<QString> m_pendingMessages;
 };

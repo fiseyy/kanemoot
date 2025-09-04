@@ -2,6 +2,7 @@
 #define CHATPAGE_H
 
 #include <QObject>
+#include <QTimer>
 #include "controller/basepage.h"
 #include "domain/chatmanager.h"
 
@@ -21,6 +22,8 @@ private:
 
     void setTheme(bool useLightTheme);
     QObject *currentTheme() const;
+    bool m_showingLoading = true;
+    QTimer* m_reconnectTimer = nullptr;
     ChatManager* m_chatmgr = nullptr;
 };
 

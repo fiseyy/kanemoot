@@ -42,4 +42,7 @@ QtObject {
     property color loadingColor: "#000000"
     property string logoIcon: "qrc:///assets/logo_black.png"
     property string smallLogoIcon: "qrc:///assets/logo_black56.png"
+
+    property color accentColor: "#00B3C2"
+
 }

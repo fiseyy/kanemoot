@@ -17,10 +17,14 @@ public:
 
     void showError(const QString &title, const QString &message);
 
+    void setHiden(bool m_hiden);
+
 private:
     explicit ErrorHandler(QObject *parent = nullptr);
     ErrorHandler(const ErrorHandler &) = delete;
     ErrorHandler &operator=(const ErrorHandler &) = delete;
+
+    bool hiden = false;
 
     QQmlApplicationEngine *m_engine;
 };

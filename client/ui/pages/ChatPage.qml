@@ -23,6 +23,8 @@ Item {
         objectName: "loadingPage"
         anchors.fill: parent
         color: currentTheme.loadingBackground
+
+        // --- Лого ---
         Item {
             id: logoContainer
             width: 150
@@ -42,16 +44,19 @@ Item {
             SequentialAnimation {
                 id: logoAnim
                 loops: Animation.Infinite
-
-                NumberAnimation { target: logoBase; property: "opacity"; from: 1.0; to: 0.2; duration: 1000; easing.type: Easing.InOutQuad }
+                ParallelAnimation {
+                    NumberAnimation { target: logoBase; property: "opacity"; from: 1.0; to: 0.2; duration: 1000; easing.type: Easing.InOutQuad }
+                }
                 PauseAnimation { duration: 50 }
-                NumberAnimation { target: logoBase; property: "opacity"; from: 0.2; to: 1.0; duration: 1000; easing.type: Easing.InOutQuad }
+                ParallelAnimation {
+                    NumberAnimation { target: logoBase; property: "opacity"; from: 0.2; to: 1.0; duration: 1000; easing.type: Easing.InOutQuad }
+                }
                 PauseAnimation { duration: 300 }
-
                 Component.onCompleted: start()
             }
         }
 
+        // --- FunFact ---
         Item {
             id: funFactContainer
             anchors.top: logoContainer.bottom
@@ -64,7 +69,6 @@ Item {
                 anchors.margins: 5
                 spacing: 4
 
-                // Заголовок
                 Text {
                     text: "Знаете ли вы?"
                     color: currentTheme.loadingColor
@@ -73,7 +77,6 @@ Item {
                     anchors.horizontalCenter: parent.horizontalCenter
                 }
 
-                // Основной факт
                 Text {
                     id: funFact
                     text: funFact.facts[Math.floor(Math.random() * funFact.facts.length)]
@@ -98,7 +101,6 @@ Item {
                         "Первая камера для видеозвонков была создана ещё в 1964 году для компьютерной лаборатории в Кембридже."
                     ]
 
-
                     Timer {
                         interval: 10000
                         running: true
@@ -109,16 +111,65 @@ Item {
             }
         }
 
+        // --- Connection Warning ---
+        Item {
+            id: connectionWarningContainer
+            anchors.top: funFactContainer.bottom
+            anchors.horizontalCenter: parent.horizontalCenter
+            width: parent.width
+            visible: false
+            anchors.topMargin: 20 // смещение блока ниже
+
+            Column {
+                anchors.horizontalCenter: parent.horizontalCenter
+                spacing: 4
+                width: parent.width
+
+
+                Text {
+                    id: warningText
+                    text: "Проблемы с сетью?"
+                    color: currentTheme.loadingColor
+                    font.pixelSize: 17 // больше, чем раньше
+                    font.bold: true
+                    horizontalAlignment: Text.AlignHCenter
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    wrapMode: Text.Wrap
+                }
+
+                Text {
+                    id: warningLink
+                    text: "Посмотреть статус серверов можно на сайте"
+                    color: currentTheme.accentColor
+                    font.pixelSize: 14
+                    horizontalAlignment: Text.AlignHCenter
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    wrapMode: Text.Wrap
+
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: Qt.openUrlExternally("https://status.kanemoot.ru")
+                    }
+                }
+            }
+
+            Timer {
+                interval: 10000 // 10 секунд
+                running: true
+                repeat: false
+                onTriggered: connectionWarningContainer.visible = true
+            }
+        }
+
+        // --- Hide function ---
         function hide() {
-            // Плавное скрытие loadingPage
             var anim = Qt.createQmlObject('import QtQuick 2.0; NumberAnimation { property: "opacity"; duration: 500 }', loadingPage);
             anim.target = loadingPage;
             anim.from = loadingPage.opacity;
             anim.to = 0;
             anim.onStopped.connect(function() {
                 loadingPage.visible = false;
-
-                // Появление chatPageContent
                 chatPageContent.opacity = 0;
                 chatPageContent.visible = true;
                 var fadeIn = Qt.createQmlObject('import QtQuick 2.0; NumberAnimation { property: "opacity"; duration: 500 }', chatPageContent);
@@ -129,5 +180,26 @@ Item {
             });
             anim.start();
         }
+        function show() {
+            loadingPage.visible = true;
+            loadingPage.opacity = 0;
+
+            var fadeIn = Qt.createQmlObject('import QtQuick 2.0; NumberAnimation { property: "opacity"; duration: 500 }', loadingPage);
+            fadeIn.target = loadingPage;
+            fadeIn.from = 0;
+            fadeIn.to = 1;
+            fadeIn.start();
+
+            if (chatPageContent) {
+                var fadeOut = Qt.createQmlObject('import QtQuick 2.0; NumberAnimation { property: "opacity"; duration: 500 }', chatPageContent);
+                fadeOut.target = chatPageContent;
+                fadeOut.from = chatPageContent.opacity;
+                fadeOut.to = 0;
+                fadeOut.onStopped.connect(function() { chatPageContent.visible = false; });
+                fadeOut.start();
+            }
+        }
+
     }
+
 }

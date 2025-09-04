@@ -3,15 +3,43 @@
 #include "core/errorcode.h"
 #include "core/apiendpoints.h"
 #include "core/securestorage.h"
-#include <QTimer>
+#include "core/errorhandler.h"
 #include <QQmlComponent>
 #include <qqmlcontext.h>
 
 ChatPage::ChatPage(QObject *parent) {
     m_chatmgr = new ChatManager(this);
-    connect(m_chatmgr, &ChatManager::connected, this, &ChatPage::connectedToChat);
-    connect(m_chatmgr, &ChatManager::disconnected, this, [](){
+    m_reconnectTimer = new QTimer(this);
+    m_reconnectTimer->setInterval(2000);
+    m_reconnectTimer->setSingleShot(false);
+    connect(m_reconnectTimer, &QTimer::timeout, [this]() {
+        if (!m_chatmgr->isConnected()) {
+            Logging::instance().log(Logging::Debug, "Пробуем переподключиться к Chat Service...");
+            m_chatmgr->connectToChat();
+        }
+    });
+
+    connect(m_chatmgr, &ChatManager::connected, [this]() {
+        m_reconnectTimer->stop();
+        if(m_showingLoading)
+            m_showingLoading = false;
+            emit connectedToChat();
+    });
+    connect(m_chatmgr, &ChatManager::disconnected, [this]() {
         Logging::instance().log(Logging::Debug, "Отключено от Chat Service.");
+
+        if (!m_showingLoading) {
+            QObject* root = getRootObject();
+            if (!root) return;
+            QObject* loadingPage = root->findChild<QObject*>("loadingPage");
+            if (loadingPage) {
+                QMetaObject::invokeMethod(loadingPage, "show");
+                m_showingLoading = true;
+                ErrorHandler::instance().setHiden(true);
+            }
+        }
+
+        if (!m_reconnectTimer->isActive()) m_reconnectTimer->start();
     });
 }
 
@@ -24,7 +52,9 @@ void ChatPage::init()
     }
     QObject* loadingPage = root->findChild<QObject*>("loadingPage");
     setTheme(false);
+    ErrorHandler::instance().setHiden(true);
     connect(this, &ChatPage::connectedToChat, [loadingPage]() {
+        ErrorHandler::instance().setHiden(false);
         if (loadingPage) {
             QMetaObject::invokeMethod(loadingPage, "hide");
         }
@@ -32,8 +62,7 @@ void ChatPage::init()
             LOG(Logging::Critical, ErrorCode::make(ErrorCode::UI, 0x0A, ErrorCode::ChatPage), "loadingPage не объявлен");
         }
     });
-
-    m_chatmgr->connectToServer(ApiEndpoints::instance().getEndpoint("chat"));
+    m_chatmgr->connectToChat();
     QString username;
     auto optUsername = SecureStorage::instance().getValue("username");
     if(!optUsername) LOG(Logging::Fatal, ErrorCode::make(ErrorCode::System, 0x02, ErrorCode::ChatPage), "");

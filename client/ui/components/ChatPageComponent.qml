@@ -7,6 +7,7 @@ Item {
     id: chatPageContent
     anchors.fill: parent
     property var currentTheme: DarkTheme
+    property string openedChatType: "dm" // "server" / "dm"
     Rectangle {
         anchors.fill: parent
         color: "#292929"
@@ -133,7 +134,8 @@ Item {
                 font.family: "Inter"
                 color: currentTheme.dmText
                 font.pixelSize: 14
-                text: "Direct Messages"
+                // text: "Direct Messages"
+                text: chatPageContent.openedChatType === "dm" ? "Direct Messages" : "Server"
             }
 
             // DMS
