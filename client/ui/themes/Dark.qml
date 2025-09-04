@@ -33,7 +33,9 @@ QtObject {
     property string emojiIcon: "qrc:///assets/dark/emoji.svg"
     property string fileIcon: "qrc:///assets/dark/file.svg"
     property string headsetIcon: "qrc:///assets/dark/headset.svg"
-    property string muteIcon: "qrc:///assets/dark/mute.svg"
+    property string mutedHeadsetIcon: "qrc:///assets/dark/headset-off.svg"
+    property string micIcon: "qrc:///assets/dark/mic.svg"
+    property string mutedMicIcon: "qrc:///assets/dark/mic-off.svg"
     property string searchIcon: "qrc:///assets/dark/search.svg"
     property string sendIcon: "qrc:///assets/dark/send.svg"
     property string settingsIcon: "qrc:///assets/dark/settings.svg"
@@ -44,4 +46,5 @@ QtObject {
     property string smallLogoIcon: "qrc:///assets/logo_white56.png"
 
     property color accentColor: "#00C7D9"
+    property color settingsColor: "#101010"
 }

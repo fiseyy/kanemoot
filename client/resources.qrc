@@ -9,7 +9,6 @@
         <file>assets/dark/emoji.svg</file>
         <file>assets/dark/file.svg</file>
         <file>assets/dark/headset.svg</file>
-        <file>assets/dark/mute.svg</file>
         <file>assets/dark/search.svg</file>
         <file>assets/dark/send.svg</file>
         <file>assets/dark/settings.svg</file>
@@ -17,7 +16,6 @@
         <file>assets/light/emoji.svg</file>
         <file>assets/light/file.svg</file>
         <file>assets/light/headset.svg</file>
-        <file>assets/light/mute.svg</file>
         <file>assets/light/search.svg</file>
         <file>assets/light/send.svg</file>
         <file>assets/light/settings.svg</file>
@@ -27,5 +25,11 @@
         <file>assets/logo_black.png</file>
         <file>assets/logo_black56.png</file>
         <file>assets/logo_white56.png</file>
+        <file>assets/dark/headset-off.svg</file>
+        <file>assets/dark/mic.svg</file>
+        <file>assets/dark/mic-off.svg</file>
+        <file>assets/light/headset-off.svg</file>
+        <file>assets/light/mic.svg</file>
+        <file>assets/light/mic-off.svg</file>
     </qresource>
 </RCC>

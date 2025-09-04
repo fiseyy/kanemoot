@@ -8,6 +8,10 @@ Item {
     anchors.fill: parent
     property var currentTheme: DarkTheme
     property string openedChatType: "dm" // "server" / "dm"
+
+    property bool micMuted: false
+    property bool headsetMuted: false
+
     Rectangle {
         anchors.fill: parent
         color: "#292929"
@@ -55,52 +59,54 @@ Item {
                 radius: 8
                 width: 278
                 height: 46
+
                 Image {
                     id: searchIcon
-                    anchors.top: searchRectangle.top
-                    anchors.left: searchRectangle.left
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.left: parent.left
+                    anchors.leftMargin: 10
                     width: 27
                     height: 27
-                    anchors.leftMargin: 10
-                    anchors.topMargin: 9
                     fillMode: Image.PreserveAspectFit
                     source: currentTheme.searchIcon
                     smooth: true
                 }
-                Text {
-                    id: searchText
-                    anchors.top: searchRectangle.top
-                    anchors.left: searchRectangle.left
+
+                TextField {
+                    id: searchField
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.left: searchIcon.right
+                    anchors.leftMargin: 8
+                    anchors.right: hotkeyRectangle.left
+                    anchors.rightMargin: 8
+                    placeholderText: "Search"
                     font.family: "Inter"
-                    color: currentTheme.searchText
                     font.pixelSize: 14
-                    anchors.leftMargin: 42
-                    anchors.topMargin: 14
-                    text: "Search"
+                    color: currentTheme.searchText
+                    background: null
                 }
+
                 Rectangle {
                     id: hotkeyRectangle
-                    anchors.top: searchRectangle.top
-                    anchors.left: searchRectangle.left
-                    anchors.leftMargin: 211
-                    anchors.topMargin: 5
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.right: parent.right
+                    anchors.rightMargin: 5
                     color: currentTheme.hotkeyRectangle
                     width: 61
                     height: 35
                     radius: 5
+
                     Text {
-                        id: hotkeyText
-                        anchors.top: hotkeyRectangle.top
-                        anchors.left: hotkeyRectangle.left
+                        anchors.centerIn: parent
                         font.family: "Inter"
-                        color: currentTheme.hotkeyText
                         font.pixelSize: 14
-                        anchors.leftMargin: 5
-                        anchors.topMargin: 9
+                        color: currentTheme.hotkeyText
                         text: "Ctrl + K"
                     }
                 }
             }
+
+
 
             Rectangle {
                 id: discoverRectangle
@@ -112,19 +118,34 @@ Item {
                 height: 46
                 radius: 7
                 color: currentTheme.discoverRectangle
+
                 Image {
                     id: discoverIcon
-                    anchors.top: discoverRectangle.top
-                    anchors.left: discoverRectangle.left
+                    anchors.centerIn: parent
                     width: 28
                     height: 28
-                    anchors.leftMargin: 9
-                    anchors.topMargin: 9
                     fillMode: Image.PreserveAspectFit
                     source: currentTheme.discoverIcon
                     smooth: true
                 }
+
+                MouseArea {
+                    id: discoverArea
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+
+                    onClicked: {
+                        console.log("Discover clicked")
+                    }
+                    onPressed: parent.opacity = 0.5
+                    onReleased: parent.opacity = 1
+                    onEntered: parent.opacity = 0.7
+                    onExited: parent.opacity = 1
+                }
             }
+
+
             Text {
                 id: dmText
                 anchors.left: middlePanel.left
@@ -210,10 +231,27 @@ Item {
                     anchors.leftMargin: 212
                     width: 25
                     height: 25
-                    source: currentTheme.muteIcon
                     fillMode: Image.PreserveAspectFit
                     smooth: true
+                    source: micMuted ? currentTheme.mutedMicIcon : currentTheme.micIcon
+
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        hoverEnabled: true
+
+                        onClicked: {
+                            micMuted = !micMuted
+                            console.log("Mic muted:", micMuted)
+                        }
+
+                        onPressed: parent.opacity = 0.5
+                        onReleased: parent.opacity = 1
+                        onEntered: parent.opacity = 0.7
+                        onExited: parent.opacity = 1
+                    }
                 }
+
                 Image {
                     id: muteHeadsetBtn
                     anchors.top: parent.top
@@ -222,10 +260,27 @@ Item {
                     anchors.leftMargin: 251
                     width: 25
                     height: 25
-                    source: currentTheme.headsetIcon
                     fillMode: Image.PreserveAspectFit
                     smooth: true
+                    source: headsetMuted ? currentTheme.mutedHeadsetIcon : currentTheme.headsetIcon
+
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        hoverEnabled: true
+
+                        onClicked: {
+                            headsetMuted = !headsetMuted
+                            console.log("Headset muted:", headsetMuted)
+                        }
+
+                        onPressed: parent.opacity = 0.5
+                        onReleased: parent.opacity = 1
+                        onEntered: parent.opacity = 0.7
+                        onExited: parent.opacity = 1
+                    }
                 }
+
                 Image {
                     id: settingsBtn
                     anchors.top: parent.top
@@ -237,6 +292,17 @@ Item {
                     source: currentTheme.settingsIcon
                     fillMode: Image.PreserveAspectFit
                     smooth: true
+
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: settingsOverlay.show()
+                        hoverEnabled: true
+                        onPressed: parent.opacity = 0.5
+                        onReleased: parent.opacity = 1
+                        onEntered:  parent.opacity = 0.7
+                        onExited: parent.opacity = 1
+                    }
                 }
             }
 
@@ -269,18 +335,22 @@ Item {
                 color: currentTheme.sendRectangle
                 radius: 15
                 height: 40
-                Text {
-                    id: sendText
-                    text: "Send a message..."
+
+                TextField {
+                    id: messageField
+                    anchors.top: parent.top
+                    anchors.bottom: parent.bottom
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.leftMargin: 11
+                    anchors.rightMargin: 100  // место под кнопки справа
+                    placeholderText: "Send a message..."
                     font.family: "Inter"
-                    // font.weight: Font.Regular
                     font.pixelSize: 14
                     color: currentTheme.sendText
-                    anchors.top: parent.top
-                    anchors.left: parent.left
-                    anchors.topMargin: 11
-                    anchors.leftMargin: 11
+                    background: null
                 }
+
                 Image {
                     id: emojiBtn
                     anchors.top: parent.top
@@ -292,7 +362,19 @@ Item {
                     source: currentTheme.emojiIcon
                     fillMode: Image.PreserveAspectFit
                     smooth: true
+
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: console.log("Emoji button clicked")
+                        hoverEnabled: true
+                        onPressed: parent.opacity = 0.5
+                        onReleased: parent.opacity = 1
+                        onEntered:  parent.opacity = 0.7
+                        onExited: parent.opacity = 1
+                    }
                 }
+
                 Image {
                     id: addFileBtn
                     anchors.top: parent.top
@@ -304,7 +386,19 @@ Item {
                     source: currentTheme.fileIcon
                     fillMode: Image.PreserveAspectFit
                     smooth: true
+
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: console.log("Add file button clicked")
+                        hoverEnabled: true
+                        onPressed: parent.opacity = 0.5
+                        onReleased: parent.opacity = 1
+                        onEntered:  parent.opacity = 0.7
+                        onExited: parent.opacity = 1
+                    }
                 }
+
                 Image {
                     id: sendBtn
                     anchors.top: parent.top
@@ -316,8 +410,115 @@ Item {
                     source: currentTheme.sendIcon
                     fillMode: Image.PreserveAspectFit
                     smooth: true
+
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: console.log("Send button clicked")
+                        hoverEnabled: true
+                        onPressed: parent.opacity = 0.5
+                        onReleased: parent.opacity = 1
+                        onEntered:  parent.opacity = 0.7
+                        onExited: parent.opacity = 1
+                    }
                 }
             }
         }
     }
+    Item {
+        id: settingsOverlay
+        anchors.fill: parent
+        visible: false
+        z: 99
+
+        // Полупрозрачный фон
+        Rectangle {
+            id: dimBackground
+            anchors.fill: parent
+            color: Qt.rgba(0,0,0,0)
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: settingsOverlay.hide()
+            }
+        }
+
+        // Основное окно настроек
+        Rectangle {
+            id: settingsWindow
+            width: parent.width * 0.9
+            height: parent.height * 0.9
+            anchors.centerIn: parent
+            radius: 12
+            color: currentTheme.settingsColor
+            opacity: 0
+            scale: 0.8
+
+            MouseArea { anchors.fill: parent; acceptedButtons: Qt.AllButtons }
+
+            Column {
+                anchors.fill: parent
+                anchors.margins: 20
+                spacing: 10
+
+                Text { text: "Settings"; font.pixelSize: 20; color: currentTheme.sendText }
+
+                Button { text: "Close"; onClicked: settingsOverlay.hide() }
+            }
+        }
+
+        // Методы управления
+        function show() {
+            visible = true
+
+            dimBackgroundAnim.to = Qt.rgba(0,0,0,0.5)
+            windowOpacityAnim.to = 1
+            windowScaleAnim.to = 1
+
+            dimBackgroundAnim.start()
+            windowOpacityAnim.start()
+            windowScaleAnim.start()
+        }
+
+        function hide() {
+            dimBackgroundAnim.to = Qt.rgba(0,0,0,0)
+            windowOpacityAnim.to = 0
+            windowScaleAnim.to = 0.8
+
+            dimBackgroundAnim.start()
+            windowOpacityAnim.start()
+            windowScaleAnim.start()
+        }
+
+        // Анимация для окна
+        NumberAnimation {
+            id: windowOpacityAnim
+            target: settingsWindow
+            property: "opacity"
+            duration: 200
+            easing.type: Easing.OutQuad
+            onStopped: {
+                if (windowOpacityAnim.to === 0) {
+                    settingsOverlay.visible = false
+                }
+            }
+        }
+
+        NumberAnimation {
+            id: windowScaleAnim
+            target: settingsWindow
+            property: "scale"
+            duration: 200
+            easing.type: Easing.OutQuad
+        }
+
+        // Анимация для фона
+        ColorAnimation {
+            id: dimBackgroundAnim
+            target: dimBackground
+            property: "color"
+            duration: 200
+        }
+    }
+
 }
