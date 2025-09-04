@@ -3,7 +3,6 @@
 #include "utils/logging.h"
 #include "utils/authvalidator.h"
 #include "core/errorcode.h"
-#include "core/securestorage.h"
 
 LoginPage::LoginPage(QObject *parent) {
     m_authmgr = new AuthManager(this);

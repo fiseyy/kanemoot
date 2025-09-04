@@ -1,7 +1,6 @@
 #include "controller/chatpage.h"
 #include "utils/logging.h"
 #include "core/errorcode.h"
-#include "core/apiendpoints.h"
 #include "core/securestorage.h"
 #include "core/errorhandler.h"
 #include <QQmlComponent>
