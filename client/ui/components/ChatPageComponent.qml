@@ -82,6 +82,7 @@ Item {
                     font.family: "Inter"
                     font.pixelSize: 14
                     color: chatPage.currentTheme.searchText
+                    placeholderTextColor: chatPage.currentTheme.searchText
                     background: null
                 }
 
@@ -347,6 +348,7 @@ Item {
                     font.family: "Inter"
                     font.pixelSize: 14
                     color: chatPage.currentTheme.sendText
+                    placeholderTextColor: chatPage.currentTheme.sendText
                     background: null
                 }
 

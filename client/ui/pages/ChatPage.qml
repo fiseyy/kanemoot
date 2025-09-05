@@ -1,12 +1,12 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import "../components" as Components
-import Themes 1.0
+import Themes 1.0 as Themes
 
 Item {
     anchors.fill: parent
     id: chatPage
-    property var currentTheme: DarkTheme
+    property var currentTheme: Themes.DarkTheme
     property string username: ""
 
     Rectangle {

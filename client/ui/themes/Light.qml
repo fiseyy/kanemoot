@@ -9,7 +9,7 @@ QtObject {
 
     // Search
     property color searchRectangle: "#ccc"
-    property color searchText: "#999999"
+    property color searchText: "#555555"
 
     // Hotkey
     property color hotkeyRectangle: "#BABABA"
