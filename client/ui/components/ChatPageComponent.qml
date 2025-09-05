@@ -201,41 +201,119 @@ Item {
                         height: 55
                     }
                 }
-                Text {
-                    id: myNickname
-                    anchors.top: parent.top
-                    anchors.left: parent.left
-                    font.family: "Inter"
-                    font.pixelSize: 17
-                    font.weight: Font.Medium
-                    color: chatPage.currentTheme.myNickname
-                    text: chatPage.username
-                    anchors.topMargin: 13
-                    anchors.leftMargin: 71
-                }
-                Text {
-                    id: myStatusText
-                    anchors.top: parent.top
-                    anchors.left: parent.left
-                    font.family: "Inter"
-                    font.pixelSize: 13
-                    // font.weight: Font.Regular
-                    // color: "#FFC300" // в зависимости от статуса
-                    color: "#78797f"
-                    anchors.topMargin: 34
-                    anchors.leftMargin: 71
-                    text: "Non-active" // временно
-                }
                 Rectangle {
-                    id: myStatusIcon
-                    anchors.top: parent.top
-                    anchors.left: parent.left
-                    anchors.topMargin: 37
-                    anchors.leftMargin: 37
-                    width: 16
-                    height: 16
-                    radius: width / 2
-                    color: "#FFC300"
+                    id: myInfoEditRectangle
+                    anchors.top: myInfoRectangle.top
+                    anchors.left: myInfoRectangle.left
+                    anchors.bottom: myInfoRectangle.bottom
+                    radius: 8
+                    width: 210
+                    color: "transparent"
+                    Rectangle {
+                        id: myInfoEditHover
+                        color: "transparent"
+                        anchors.fill: parent
+                        anchors.margins: 5
+                        radius: 8
+                    }
+
+                    Text {
+                        id: myNickname
+                        anchors.top: parent.top
+                        anchors.left: parent.left
+                        font.family: "Inter"
+                        font.pixelSize: 17
+                        font.weight: Font.Medium
+                        color: chatPage.currentTheme.myNickname
+                        text: chatPage.username
+                        anchors.topMargin: 13
+                        anchors.leftMargin: 71
+                    }
+                    Text {
+                        id: myStatusText
+                        anchors.top: parent.top
+                        anchors.left: parent.left
+                        font.family: "Inter"
+                        font.pixelSize: 13
+                        // font.weight: Font.Regular
+                        // color: "#FFC300" // в зависимости от статуса
+                        color: "#78797f"
+                        anchors.topMargin: 34
+                        anchors.leftMargin: 71
+                        text: "Non-active" // временно
+                    }
+                    Rectangle {
+                        id: myStatusIcon
+                        anchors.top: parent.top
+                        anchors.left: parent.left
+                        anchors.topMargin: 37
+                        anchors.leftMargin: 37
+                        width: 16
+                        height: 16
+                        radius: width / 2
+                        color: "#FFC300"
+                    }
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        hoverEnabled: true
+                        onClicked: editPopup.toggle()
+                        onEntered: myInfoEditHover.color = Qt.rgba(1,1,1,0.1)
+                        onExited: myInfoEditHover.color = "transparent"
+                    }
+                    Popup {
+                        id: editPopup
+                        modal: false
+                        width: 336
+                        height: 120
+                        x: myInfoRectangle.x - 10
+                        y: myInfoEditRectangle.y - 5 - height
+                        background: Rectangle { color: "transparent" }
+                        opacity: 0
+                        scale: 0.8
+
+                        property bool isOpen: false
+
+                        function toggle() {
+                            if (isOpen) {
+                                close()
+                                isOpen = false
+                            } else {
+                                open()
+                                isOpen = true
+                            }
+                        }
+
+                        onOpened: {
+                            opacity = 1
+                            scale = 1
+                        }
+                        onClosed: {
+                            opacity = 0
+                            scale = 0.8
+                        }
+
+                        Behavior on opacity {
+                            NumberAnimation { duration: 180; easing.type: Easing.InOutQuad }
+                        }
+                        Behavior on scale {
+                            NumberAnimation { duration: 180; easing.type: Easing.InOutQuad }
+                        }
+
+                        Rectangle {
+                            anchors.fill: parent
+                            color: chatPage.currentTheme.myInfoRectangle
+                            border.color: chatPage.currentTheme.myInfoRectangleBorder
+                            border.width: 1
+                            radius: 8
+                            Text {
+                                anchors.centerIn: parent
+                                text: "Изменить пользователя"
+                                color: chatPage.currentTheme.settingsText
+                            }
+                        }
+                    }
+
                 }
                 Image {
                     id: muteMicroBtn
