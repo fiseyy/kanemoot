@@ -5,7 +5,7 @@ QtObject {
     // Panels
     property color leftPanel: "#FFFFFF"
     property color middlePanel: "#F7F7F7"
-    property color rightPanel: "#d0d0d0"
+    property color rightPanel: "#D0D0D0"
 
     // Search
     property color searchRectangle: "#ccc"
@@ -47,4 +47,10 @@ QtObject {
 
     property color accentColor: "#00B3C2"
     property color settingsColor: "#F7F7F7"
+
+    property color sliderOffColor:"#D0D0D0"
+    property color sliderOnColor: accentColor
+    property color settingsText: "#000000"
+
+    property color settingsLineColor: Qt.rgba(0,0,0,0.08)
 }

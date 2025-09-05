@@ -15,7 +15,7 @@ Item {
         z:1
     }
 
-    Components.ChatPageComponent { z:3; id: chatPageContent; visible: false; currentTheme: chatPage.currentTheme }
+    Components.ChatPageComponent { z:3; id: chatPageContent; visible: false}
 
     Rectangle {
         id: loadingPage

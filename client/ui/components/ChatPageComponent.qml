@@ -6,7 +6,6 @@ import Themes 1.0
 Item {
     id: chatPageContent
     anchors.fill: parent
-    property var currentTheme: DarkTheme
     property string openedChatType: "dm" // "server" / "dm"
 
     property bool micMuted: false
@@ -24,7 +23,7 @@ Item {
             anchors.bottom: parent.bottom
             anchors.left: parent.left
             // color: "#272729"
-            color: currentTheme.leftPanel
+            color: chatPage.currentTheme.leftPanel
 
             Image {
                 id: kanemootLogo
@@ -34,7 +33,7 @@ Item {
                 anchors.topMargin: 7
                 width: 56
                 height: 56
-                source: currentTheme.smallLogoIcon
+                source: chatPage.currentTheme.smallLogoIcon
                 fillMode: Image.PreserveAspectFit
                 smooth: true
                 layer.enabled: true
@@ -48,14 +47,14 @@ Item {
             anchors.top: parent.top
             anchors.bottom: parent.bottom
             anchors.left: leftPanel.right
-            color: currentTheme.middlePanel
+            color: chatPage.currentTheme.middlePanel
             Rectangle {
                 id: searchRectangle
                 anchors.top: middlePanel.top
                 anchors.left: middlePanel.left
                 anchors.topMargin: 13
                 anchors.leftMargin: 4
-                color: currentTheme.searchRectangle
+                color: chatPage.currentTheme.searchRectangle
                 radius: 8
                 width: 278
                 height: 46
@@ -68,7 +67,7 @@ Item {
                     width: 27
                     height: 27
                     fillMode: Image.PreserveAspectFit
-                    source: currentTheme.searchIcon
+                    source: chatPage.currentTheme.searchIcon
                     smooth: true
                 }
 
@@ -82,7 +81,7 @@ Item {
                     placeholderText: "Search"
                     font.family: "Inter"
                     font.pixelSize: 14
-                    color: currentTheme.searchText
+                    color: chatPage.currentTheme.searchText
                     background: null
                 }
 
@@ -91,7 +90,7 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.right: parent.right
                     anchors.rightMargin: 5
-                    color: currentTheme.hotkeyRectangle
+                    color: chatPage.currentTheme.hotkeyRectangle
                     width: 61
                     height: 35
                     radius: 5
@@ -100,7 +99,7 @@ Item {
                         anchors.centerIn: parent
                         font.family: "Inter"
                         font.pixelSize: 14
-                        color: currentTheme.hotkeyText
+                        color: chatPage.currentTheme.hotkeyText
                         text: "Ctrl + K"
                     }
                 }
@@ -117,7 +116,7 @@ Item {
                 width: 46
                 height: 46
                 radius: 7
-                color: currentTheme.discoverRectangle
+                color: chatPage.currentTheme.discoverRectangle
 
                 Image {
                     id: discoverIcon
@@ -125,7 +124,7 @@ Item {
                     width: 28
                     height: 28
                     fillMode: Image.PreserveAspectFit
-                    source: currentTheme.discoverIcon
+                    source: chatPage.currentTheme.discoverIcon
                     smooth: true
                 }
 
@@ -153,7 +152,7 @@ Item {
                 anchors.leftMargin: 14
                 anchors.topMargin: 78
                 font.family: "Inter"
-                color: currentTheme.dmText
+                color: chatPage.currentTheme.dmText
                 font.pixelSize: 14
                 // text: "Direct Messages"
                 text: chatPageContent.openedChatType === "dm" ? "Direct Messages" : "Server"
@@ -168,7 +167,7 @@ Item {
                 anchors.bottom: parent.bottom
                 anchors.bottomMargin: 0
                 height: 72
-                color: currentTheme.myInfoRectangle
+                color: chatPage.currentTheme.myInfoRectangle
                 Rectangle {
                     id: myAvatarRectangle
                     radius: 8
@@ -195,7 +194,7 @@ Item {
                     font.family: "Inter"
                     font.pixelSize: 20
                     font.weight: Font.Medium
-                    color: currentTheme.myNickname
+                    color: chatPage.currentTheme.myNickname
                     text: chatPage.username
                     anchors.topMargin: 15
                     anchors.leftMargin: 71
@@ -233,7 +232,7 @@ Item {
                     height: 25
                     fillMode: Image.PreserveAspectFit
                     smooth: true
-                    source: micMuted ? currentTheme.mutedMicIcon : currentTheme.micIcon
+                    source: micMuted ? chatPage.currentTheme.mutedMicIcon : chatPage.currentTheme.micIcon
 
                     MouseArea {
                         anchors.fill: parent
@@ -262,7 +261,7 @@ Item {
                     height: 25
                     fillMode: Image.PreserveAspectFit
                     smooth: true
-                    source: headsetMuted ? currentTheme.mutedHeadsetIcon : currentTheme.headsetIcon
+                    source: headsetMuted ? chatPage.currentTheme.mutedHeadsetIcon : chatPage.currentTheme.headsetIcon
 
                     MouseArea {
                         anchors.fill: parent
@@ -289,7 +288,7 @@ Item {
                     anchors.leftMargin: 290
                     width: 25
                     height: 25
-                    source: currentTheme.settingsIcon
+                    source: chatPage.currentTheme.settingsIcon
                     fillMode: Image.PreserveAspectFit
                     smooth: true
 
@@ -315,14 +314,14 @@ Item {
             anchors.bottom: parent.bottom
             anchors.left: middlePanel.right
             anchors.right: parent.right
-            color: currentTheme.rightPanel
+            color: chatPage.currentTheme.rightPanel
             Rectangle {
                 id: chatInfoRectangle // будь то инфо о человеке, или открытом канале сервера
                 anchors.top: parent.top
                 anchors.left: parent.left
                 anchors.right: parent.right
                 height: 72
-                color: currentTheme.chatInfoRectangle
+                color: chatPage.currentTheme.chatInfoRectangle
             }
             Rectangle {
                 id: sendRectangle
@@ -332,7 +331,7 @@ Item {
                 anchors.rightMargin: 14
                 anchors.bottom: parent.bottom
                 anchors.bottomMargin: 18
-                color: currentTheme.sendRectangle
+                color: chatPage.currentTheme.sendRectangle
                 radius: 15
                 height: 40
 
@@ -347,7 +346,7 @@ Item {
                     placeholderText: "Send a message..."
                     font.family: "Inter"
                     font.pixelSize: 14
-                    color: currentTheme.sendText
+                    color: chatPage.currentTheme.sendText
                     background: null
                 }
 
@@ -359,7 +358,7 @@ Item {
                     anchors.rightMargin: 78
                     width: 24
                     height: 24
-                    source: currentTheme.emojiIcon
+                    source: chatPage.currentTheme.emojiIcon
                     fillMode: Image.PreserveAspectFit
                     smooth: true
 
@@ -383,7 +382,7 @@ Item {
                     anchors.rightMargin: 43
                     width: 24
                     height: 24
-                    source: currentTheme.fileIcon
+                    source: chatPage.currentTheme.fileIcon
                     fillMode: Image.PreserveAspectFit
                     smooth: true
 
@@ -407,7 +406,7 @@ Item {
                     anchors.rightMargin: 8
                     width: 24
                     height: 24
-                    source: currentTheme.sendIcon
+                    source: chatPage.currentTheme.sendIcon
                     fillMode: Image.PreserveAspectFit
                     smooth: true
 
@@ -425,100 +424,7 @@ Item {
             }
         }
     }
-    Item {
+    Components.SettingsOverlay {
         id: settingsOverlay
-        anchors.fill: parent
-        visible: false
-        z: 99
-
-        // Полупрозрачный фон
-        Rectangle {
-            id: dimBackground
-            anchors.fill: parent
-            color: Qt.rgba(0,0,0,0)
-
-            MouseArea {
-                anchors.fill: parent
-                onClicked: settingsOverlay.hide()
-            }
-        }
-
-        // Основное окно настроек
-        Rectangle {
-            id: settingsWindow
-            width: parent.width * 0.9
-            height: parent.height * 0.9
-            anchors.centerIn: parent
-            radius: 12
-            color: currentTheme.settingsColor
-            opacity: 0
-            scale: 0.8
-
-            MouseArea { anchors.fill: parent; acceptedButtons: Qt.AllButtons }
-
-            Column {
-                anchors.fill: parent
-                anchors.margins: 20
-                spacing: 10
-
-                Text { text: "Settings"; font.pixelSize: 20; color: currentTheme.sendText }
-
-                Button { text: "Close"; onClicked: settingsOverlay.hide() }
-            }
-        }
-
-        // Методы управления
-        function show() {
-            visible = true
-
-            dimBackgroundAnim.to = Qt.rgba(0,0,0,0.5)
-            windowOpacityAnim.to = 1
-            windowScaleAnim.to = 1
-
-            dimBackgroundAnim.start()
-            windowOpacityAnim.start()
-            windowScaleAnim.start()
-        }
-
-        function hide() {
-            dimBackgroundAnim.to = Qt.rgba(0,0,0,0)
-            windowOpacityAnim.to = 0
-            windowScaleAnim.to = 0.8
-
-            dimBackgroundAnim.start()
-            windowOpacityAnim.start()
-            windowScaleAnim.start()
-        }
-
-        // Анимация для окна
-        NumberAnimation {
-            id: windowOpacityAnim
-            target: settingsWindow
-            property: "opacity"
-            duration: 200
-            easing.type: Easing.OutQuad
-            onStopped: {
-                if (windowOpacityAnim.to === 0) {
-                    settingsOverlay.visible = false
-                }
-            }
-        }
-
-        NumberAnimation {
-            id: windowScaleAnim
-            target: settingsWindow
-            property: "scale"
-            duration: 200
-            easing.type: Easing.OutQuad
-        }
-
-        // Анимация для фона
-        ColorAnimation {
-            id: dimBackgroundAnim
-            target: dimBackground
-            property: "color"
-            duration: 200
-        }
     }
-
 }
