@@ -3,30 +3,34 @@ import QtQuick 2.15
 
 QtObject {
     // Panels
-    property color leftPanel: "#272729"
-    property color middlePanel: "#242424"
-    property color rightPanel: "#1A1A1A"
+    property color leftPanel: "#0C0C0C"      // было #272729
+    property color middlePanel: "#0F0F0F"    // было #242424
+    property color rightPanel: "#0A0A0A"     // было #1A1A1A
 
     // Search
-    property color searchRectangle: "#383838"
-    property color searchText: "#999999"
+    property color searchRectangle: "#2C2C2C"    // темнее #383838
+    property color searchText: "#AAAAAA"
+    property color searchDefaultText: "#999999"
 
     // Hotkey
-    property color hotkeyRectangle: "#333333"
+    property color hotkeyRectangle: "#292929"     // темнее #333333
     property color hotkeyText: "#888888"
 
     // Discover / DM
-    property color discoverRectangle: "#383838"
+    property color discoverRectangle: "#2C2C2C"  // темнее #383838
     property color dmText: "#A7A7A7"
 
     // My info
-    property color myInfoRectangle: "#292929"
+    property color myInfoRectangle: "#101010" // было #292929
+    property color myInfoRectangleBorder: "#1f1f23"
     property color myNickname: "#ffffff"
 
     // Chat
-    property color chatInfoRectangle: "#262626"
-    property color sendRectangle: "#292929"
-    property color sendText: "#C0C0C0"
+    property color chatInfoRectangle: "#101010"  // темнее #212121
+    property color sendRectangle: "#151515"
+    property color sendText: "#CFCFCF"
+    property color sendDefaultText: "#C0C0C0"
+    property color sendRectangleBorder: "#1f1f23"
 
     // Icons
     property string discoverIcon: "qrc:///assets/dark/discover.svg"
@@ -40,17 +44,16 @@ QtObject {
     property string sendIcon: "qrc:///assets/dark/send.svg"
     property string settingsIcon: "qrc:///assets/dark/settings.svg"
 
+    // Loading
     property color loadingBackground: "#1E1E1E"
     property color loadingColor: "#F0F0F0"
     property string logoIcon: "qrc:///assets/logo_white.png"
     property string smallLogoIcon: "qrc:///assets/logo_white56.png"
-
-    property color accentColor: "#00C7D9"
+    // Settings
     property color settingsColor: "#101010"
-
     property color sliderOffColor:"#2A2A2A"
-    property color sliderOnColor: accentColor
     property color settingsText: "#ffffff"
 
     property color settingsLineColor: Qt.rgba(1,1,1,0.08)
+
 }

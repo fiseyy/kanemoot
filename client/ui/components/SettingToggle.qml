@@ -55,7 +55,7 @@ Item {
             height: 28
             anchors.verticalCenter: parent.verticalCenter
 
-            property color onColor: chatPage.currentTheme.sliderOnColor
+            property color onColor: chatPage.accentColor
             property color offColor: chatPage.currentTheme.sliderOffColor
 
             Rectangle {

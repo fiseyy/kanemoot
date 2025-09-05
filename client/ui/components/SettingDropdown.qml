@@ -86,7 +86,7 @@ Item {
     Popup {
         id: popup
         width: selector.width
-        modal: true
+        modal: false
         focus: true
         x: selector.x
         y: selector.y - 20
@@ -122,7 +122,7 @@ Item {
                         height: 36
                         radius: 6
                         color: index === dropdown.currentIndex
-                            ? Qt.rgba(0,0.78,0.85,0.2)
+                            ? chatPage.accentColor
                             : chatPage.currentTheme.middlePanel
 
                         Text {

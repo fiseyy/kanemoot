@@ -1,5 +1,6 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
+import Qt5Compat.GraphicalEffects
 import "../components" as Components
 import Themes 1.0
 
@@ -37,6 +38,13 @@ Item {
                 fillMode: Image.PreserveAspectFit
                 smooth: true
                 layer.enabled: true
+                visible: false
+            }
+
+            ColorOverlay {
+                anchors.fill: kanemootLogo
+                source: kanemootLogo
+                color: chatPage.accentColor
             }
         }
 
@@ -82,7 +90,7 @@ Item {
                     font.family: "Inter"
                     font.pixelSize: 14
                     color: chatPage.currentTheme.searchText
-                    placeholderTextColor: chatPage.currentTheme.searchText
+                    placeholderTextColor: chatPage.currentTheme.searchDefaultText
                     background: null
                 }
 
@@ -166,9 +174,14 @@ Item {
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.bottom: parent.bottom
-                anchors.bottomMargin: 0
-                height: 72
+                anchors.bottomMargin: 10
+                anchors.leftMargin: 5
+                anchors.rightMargin: 5
+                radius: 8
+                height: 62
                 color: chatPage.currentTheme.myInfoRectangle
+                border.color: chatPage.currentTheme.myInfoRectangleBorder
+                border.width: 1
                 Rectangle {
                     id: myAvatarRectangle
                     radius: 8
@@ -176,8 +189,8 @@ Item {
                     anchors.left: myInfoRectangle.left
                     anchors.topMargin: 8
                     anchors.leftMargin: 8
-                    width: 55
-                    height: 55
+                    width: 45
+                    height: 45
                     color: "#E0E0E0"
                     Image {
                         id: myAvatar
@@ -193,11 +206,11 @@ Item {
                     anchors.top: parent.top
                     anchors.left: parent.left
                     font.family: "Inter"
-                    font.pixelSize: 20
+                    font.pixelSize: 17
                     font.weight: Font.Medium
                     color: chatPage.currentTheme.myNickname
                     text: chatPage.username
-                    anchors.topMargin: 15
+                    anchors.topMargin: 13
                     anchors.leftMargin: 71
                 }
                 Text {
@@ -205,10 +218,11 @@ Item {
                     anchors.top: parent.top
                     anchors.left: parent.left
                     font.family: "Inter"
-                    font.pixelSize: 15
+                    font.pixelSize: 13
                     // font.weight: Font.Regular
-                    color: "#FFC300" // в зависимости от статуса
-                    anchors.topMargin: 39
+                    // color: "#FFC300" // в зависимости от статуса
+                    color: "#78797f"
+                    anchors.topMargin: 34
                     anchors.leftMargin: 71
                     text: "Non-active" // временно
                 }
@@ -216,8 +230,8 @@ Item {
                     id: myStatusIcon
                     anchors.top: parent.top
                     anchors.left: parent.left
-                    anchors.topMargin: 47
-                    anchors.leftMargin: 47
+                    anchors.topMargin: 37
+                    anchors.leftMargin: 37
                     width: 16
                     height: 16
                     radius: width / 2
@@ -227,7 +241,7 @@ Item {
                     id: muteMicroBtn
                     anchors.top: parent.top
                     anchors.left: parent.left
-                    anchors.topMargin: 26
+                    anchors.topMargin: 20
                     anchors.leftMargin: 212
                     width: 25
                     height: 25
@@ -256,7 +270,7 @@ Item {
                     id: muteHeadsetBtn
                     anchors.top: parent.top
                     anchors.left: parent.left
-                    anchors.topMargin: 26
+                    anchors.topMargin: 20
                     anchors.leftMargin: 251
                     width: 25
                     height: 25
@@ -285,7 +299,7 @@ Item {
                     id: settingsBtn
                     anchors.top: parent.top
                     anchors.left: parent.left
-                    anchors.topMargin: 26
+                    anchors.topMargin: 20
                     anchors.leftMargin: 290
                     width: 25
                     height: 25
@@ -333,6 +347,8 @@ Item {
                 anchors.bottom: parent.bottom
                 anchors.bottomMargin: 18
                 color: chatPage.currentTheme.sendRectangle
+                border.color: chatPage.currentTheme.sendRectangleBorder
+                border.width: 1
                 radius: 15
                 height: 40
 
@@ -348,7 +364,7 @@ Item {
                     font.family: "Inter"
                     font.pixelSize: 14
                     color: chatPage.currentTheme.sendText
-                    placeholderTextColor: chatPage.currentTheme.sendText
+                    placeholderTextColor: chatPage.currentTheme.sendDefaultText
                     background: null
                 }
 

@@ -44,7 +44,7 @@ Item {
                 color: closeBtn.hovered ? Qt.rgba(1,1,1,0.08) : "transparent"
             }
             contentItem: Text {
-                text: "✕"
+                text: " ✕"
                 anchors.centerIn: parent
                 font.pixelSize: 16
                 color: chatPage.currentTheme.settingsText
@@ -94,7 +94,7 @@ Item {
                     anchors.bottom: parent.bottom
                     width: 4
                     radius: 2
-                    color: selectedCategory === modelData.id ? chatPage.currentTheme.accentColor : "transparent"
+                    color: selectedCategory === modelData.id ? chatPage.accentColor : "transparent"
                 }
 
                 Text {
@@ -182,6 +182,13 @@ Item {
                         }
                     }
 
+                    Components.AccentColorSelector {
+                        width: parent.width
+                        height: parent.width
+                        onCurrentAccentChanged: {
+                            console.log("Новый акцентный цвет:", currentAccent)
+                        }
+                    }
 
                     Components.SettingToggle {
                         title: "Использовать компактные иконки"
@@ -198,13 +205,31 @@ Item {
         id: notificationsPage
         Item {
             anchors.fill: parent
-            Item { anchors.fill: parent; anchors.margins: 20;
-                Column { spacing: 12; width: parent.width
-                    Components.SettingToggle { title: "Enable sound"; subtitle: ""; enabled: true; width: parent.width }
-                    Components.SettingToggle { title: "Show desktop notifications"; subtitle: ""; enabled: false; width: parent.width }
+            Item {
+                anchors.fill: parent
+                anchors.margins: 20
+                Column {
+                    spacing: 12
+                    width: parent.width
+
+                    Components.SettingToggle {
+                        title: "Включить звук уведомлений"
+                        subtitle: "Воспроизводить звук при получении уведомлений"
+                        enabled: true
+                        width: parent.width
+                    }
+
+                    Components.SettingToggle {
+                        title: "Показывать уведомления на рабочем столе"
+                        subtitle: "Отображать всплывающие уведомления, даже если приложение свернуто"
+                        enabled: false
+                        width: parent.width
+                    }
+
                 }
             }
         }
     }
+
 
 }

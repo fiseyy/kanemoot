@@ -7,6 +7,7 @@ Item {
     anchors.fill: parent
     id: chatPage
     property var currentTheme: Themes.DarkTheme
+    property string accentColor: "#00C7D9"
     property string username: ""
 
     Rectangle {
@@ -140,7 +141,7 @@ Item {
                 Text {
                     id: warningLink
                     text: "Посмотреть статус серверов можно на сайте"
-                    color: currentTheme.accentColor
+                    color: chatPage.accentColor
                     font.pixelSize: 14
                     horizontalAlignment: Text.AlignHCenter
                     anchors.horizontalCenter: parent.horizontalCenter

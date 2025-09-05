@@ -5,11 +5,12 @@ QtObject {
     // Panels
     property color leftPanel: "#FFFFFF"
     property color middlePanel: "#F7F7F7"
-    property color rightPanel: "#D0D0D0"
+    property color rightPanel: "#DFDFDF"
 
     // Search
     property color searchRectangle: "#ccc"
-    property color searchText: "#555555"
+    property color searchText: "#444444"
+    property color searchDefaultText: "#555555"
 
     // Hotkey
     property color hotkeyRectangle: "#BABABA"
@@ -21,12 +22,15 @@ QtObject {
 
     // My info
     property color myInfoRectangle: "#FFFFFF"
+    property color myInfoRectangleBorder: "#F1F1F1"
     property color myNickname: "#000000"
 
     // Chat
-    property color chatInfoRectangle: "#E0E0E0"
+    property color chatInfoRectangle: "#EEEEEE"
     property color sendRectangle: "#D9D9D9"
-    property color sendText: "#555555"
+    property color sendText: "#444444"
+    property color sendDefaultText: "#555555"
+    property color sendRectangleBorder: "#F1F1F1"
 
     // Icons
     property string discoverIcon: "qrc:///assets/light/discover.svg"
@@ -45,11 +49,9 @@ QtObject {
     property string logoIcon: "qrc:///assets/logo_black.png"
     property string smallLogoIcon: "qrc:///assets/logo_black56.png"
 
-    property color accentColor: "#00B3C2"
     property color settingsColor: "#F7F7F7"
 
     property color sliderOffColor:"#D0D0D0"
-    property color sliderOnColor: accentColor
     property color settingsText: "#000000"
 
     property color settingsLineColor: Qt.rgba(0,0,0,0.08)
