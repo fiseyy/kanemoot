@@ -22,15 +22,16 @@ QtObject {
 
     // My info
     property color myInfoRectangle: "#FFFFFF"
-    property color myInfoRectangleBorder: "#F1F1F1"
+    property color myInfoRectangleBorder: "#CCCCCC"
     property color myNickname: "#000000"
+    property color myInfoEditHoverColor: Qt.rgba(0,0,0,0.1)
 
     // Chat
     property color chatInfoRectangle: "#EEEEEE"
     property color sendRectangle: "#D9D9D9"
     property color sendText: "#444444"
     property color sendDefaultText: "#555555"
-    property color sendRectangleBorder: "#F1F1F1"
+    property color sendRectangleBorder: "#CCCCCC"
 
     // Icons
     property string discoverIcon: "qrc:///assets/light/discover.svg"

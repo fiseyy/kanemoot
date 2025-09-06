@@ -258,7 +258,7 @@ Item {
                         cursorShape: Qt.PointingHandCursor
                         hoverEnabled: true
                         onClicked: editPopup.toggle()
-                        onEntered: myInfoEditHover.color = Qt.rgba(1,1,1,0.1)
+                        onEntered: myInfoEditHover.color = chatPage.currentTheme.myInfoEditHoverColor
                         onExited: myInfoEditHover.color = "transparent"
                     }
                     Popup {

@@ -14,6 +14,7 @@ Item {
         spacing: 12
         anchors.left: parent.left
         anchors.right: parent.right
+        anchors.margins: 12
 
         // Заголовок
         Text {
@@ -56,6 +57,8 @@ Item {
                 text: "Или сделайте свой:"
                 font.pixelSize: 14
                 color: chatPage.currentTheme.settingsText
+                y: customColorBtn.y + 3
+
             }
 
             Rectangle {

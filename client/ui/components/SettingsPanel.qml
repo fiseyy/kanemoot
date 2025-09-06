@@ -185,9 +185,7 @@ Item {
                     Components.AccentColorSelector {
                         width: parent.width
                         height: parent.width
-                        onCurrentAccentChanged: {
-                            console.log("Новый акцентный цвет:", currentAccent)
-                        }
+                        onCurrentAccentChanged: {}
                     }
 
                     Components.SettingToggle {

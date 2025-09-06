@@ -24,6 +24,7 @@ Item {
             Text {
                 anchors.topMargin: 12
                 anchors.verticalCenter: parent.verticalCenter
+                anchors.leftMargin: 0
                 anchors.fill: parent
                 text: dropdown.title
                 font.pixelSize: 16

@@ -24,6 +24,7 @@ QtObject {
     property color myInfoRectangle: "#101010" // было #292929
     property color myInfoRectangleBorder: "#1f1f23"
     property color myNickname: "#ffffff"
+    property color myInfoEditHoverColor: Qt.rgba(1,1,1,0.1)
 
     // Chat
     property color chatInfoRectangle: "#101010"  // темнее #212121
