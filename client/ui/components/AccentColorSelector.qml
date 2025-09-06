@@ -57,7 +57,7 @@ Item {
                 text: "Или сделайте свой:"
                 font.pixelSize: 14
                 color: chatPage.currentTheme.settingsText
-                y: customColorBtn.y + 3
+                y: customColorBtn.y + 4
 
             }
 
