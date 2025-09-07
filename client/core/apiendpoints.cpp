@@ -21,7 +21,6 @@ QUrl ApiEndpoints::getEndpoint(const QString &service) const {
     if (m_endpoints.contains(service)) {
         return m_endpoints[service];
     }
-    // LOG(Logging::Warning, QString("Неизвестный сервис: %1").arg(service));
     LOG(Logging::Warning, ErrorCode::make(ErrorCode::Network, 0x06, ErrorCode::ApiEndpoints), "");
     return QUrl();
 }
