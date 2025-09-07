@@ -4,7 +4,6 @@ import aiohttp
 import json
 from models import *
 from database import *
-import requests
 
 JWT_TOKEN_EXPIRE_MINUTES = 30
 SECRET = "Fiseyy_JWT_Secret!"  # используем одинаковый секрет, что и в chat-service
