@@ -1,6 +1,8 @@
-from models import SessionLocal, User
+from models import SessionLocal, User, AccessToken
 import bcrypt
 import psycopg2
+import uuid
+from datetime import datetime, timedelta
 
 def create_user(username, password):
     password_hash = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
@@ -37,3 +39,15 @@ def check_connection():
     except Exception as e:
         print("Ошибка подключения:", e)
         return False
+    
+
+def create_access_token(user_id: int, expire_minutes: int = 0):
+    db = SessionLocal()
+    token_str = str(uuid.uuid4())
+    expires_at = datetime.utcnow() + timedelta(minutes=expire_minutes) if expire_minutes > 0 else None
+    token = AccessToken(user_id=user_id, token=token_str, expires_at=expires_at)
+    db.add(token)
+    db.commit()
+    db.refresh(token)
+    db.close()
+    return token

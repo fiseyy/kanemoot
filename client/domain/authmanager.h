@@ -13,7 +13,7 @@ public:
     explicit AuthManager(QObject *parent = nullptr);
     void tryAuth(const QString& login, const QString& password);
     void tryReg(const QString& login, const QString& password, const QString& email);
-    void tryAutoLogin(const QString& jwt_token);
+    void tryAutoTokenLogin(const QString &access_token);
 signals:
     void authSucceeded();
     void authFailed(const QString& error);

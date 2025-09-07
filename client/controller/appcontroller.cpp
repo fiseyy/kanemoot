@@ -64,33 +64,35 @@ void AppController::setCurrentPage(BasePage *newPage)
 void AppController::start()
 {
     Logging::instance().log(Logging::Info, "Пытаюсь восстановить прошлую сессию...");
-    auto jwt_opt = SecureStorage::instance().getValue("jwt-token");
-    QString jwt_token;
+    auto access_opt = SecureStorage::instance().getValue("access-token");
+    QString access_token;
 
-    if (jwt_opt.has_value()) {
-        jwt_token = jwt_opt.value();
+    if (access_opt.has_value()) {
+        access_token = access_opt.value();
     }
 
-    if (!jwt_token.isEmpty()) {
-        Logging::instance().log(Logging::Info, "Сессия найдена. Попытка восстановить пользователя по сохранённой сессии...");
+    if (!access_token.isEmpty()) {
+        Logging::instance().log(Logging::Info, "Сессия найдена. Попытка восстановить пользователя по access-token...");
 
         AuthManager* authmgr = new AuthManager(this);
         connect(authmgr, &AuthManager::authSucceeded, this, [this](){
-            Logging::instance().log(Logging::Info, "Пользователь восстановлен по JWT.");
+            Logging::instance().log(Logging::Info, "Пользователь восстановлен по access-token.");
             ChatPage* chatPage = new ChatPage(this);
             setCurrentPage(chatPage);
         });
         connect(authmgr, &AuthManager::authFailed, this, [this](){
-            Logging::instance().log(Logging::Info, "Не удалось восстановить пользователя по JWT. Открываю страницу авторизации...");
+            Logging::instance().log(Logging::Info, "Не удалось восстановить пользователя по access-token. Открываю страницу авторизации...");
             LoginPage* loginPage = new LoginPage(this);
             setCurrentPage(loginPage);
         });
-        authmgr->tryAutoLogin(jwt_token);
+        authmgr->tryAutoTokenLogin(access_token);
         return;
     }
+
     Logging::instance().log(Logging::Info, "Сессия не найдена. Открываю страницу авторизации...");
     LoginPage* loginPage = new LoginPage(this);
     setCurrentPage(loginPage);
+
 }
 
 

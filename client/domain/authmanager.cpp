@@ -74,17 +74,16 @@ void AuthManager::tryReg(const QString &login, const QString &password, const QS
     }
 }
 
-void AuthManager::tryAutoLogin(const QString &jwt_token)
+void AuthManager::tryAutoTokenLogin(const QString &access_token)
 {
     if (m_socket && m_socket->getState() == QAbstractSocket::ConnectingState) {
-        // ErrorHandler::instance().showError("Предупреждение", "Подключение уже выполняется. Подождите.");
         LOG(Logging::Warning, ErrorCode::make(ErrorCode::Network, 0x03, ErrorCode::AuthManager), "");
         return;
     }
 
     QJsonObject obj;
-    obj["action"] = "auto_jwt_login";
-    obj["jwt"] = jwt_token;
+    obj["action"] = "auto_token_login";
+    obj["token"] = access_token;
 
     QJsonDocument doc(obj);
     m_pendingRequest = doc.toJson(QJsonDocument::Compact);
@@ -95,6 +94,7 @@ void AuthManager::tryAutoLogin(const QString &jwt_token)
         m_socket->connectToServer(ApiEndpoints::instance().getEndpoint("auth"));
     }
 }
+
 
 void AuthManager::onConnected()
 {
@@ -113,27 +113,30 @@ void AuthManager::onMessageReceived(const QString &text)
         return;
     }
     QJsonObject obj = doc.object();
-    QString jwt_token = obj.value("jwt").toString();
     bool success = obj.value("success").toBool() == true;
+
+    QString jwt_token = obj.value("jwt").toString();
+    QString access_token = obj.value("access_token").toString();
+
     if (success) {
-        SecureStorage::instance().setValue("jwt-token", jwt_token);
-        auto optToken = SecureStorage::instance().getValue("jwt-token");
-        if (optToken)
+        if (!jwt_token.isEmpty()) {
+            SecureStorage::instance().setValue("jwt-token", jwt_token);
             Logging::instance().log(Logging::Debug, "JWT-токен записан.");
-        else
-            Logging::instance().log(Logging::Debug, "JWT-токен записан, но не удалось прочитать значение из Storage");
-        if(!username.isEmpty()) {
+        }
+        if (!access_token.isEmpty()) {
+            SecureStorage::instance().setValue("access-token", access_token);
+            Logging::instance().log(Logging::Debug, "Access-токен записан.");
+        }
+
+        if (!username.isEmpty()) {
             SecureStorage::instance().setValue("username", username);
-            auto optUsername = SecureStorage::instance().getValue("username");
-            if(optUsername)
-                Logging::instance().log(Logging::Debug, "Имя пользователя записано.");
-            else
-                Logging::instance().log(Logging::Debug, "Имя пользователя записано, но не удалось прочитать значение из Storage");
+            Logging::instance().log(Logging::Debug, "Имя пользователя записано.");
         }
         emit authSucceeded();
     } else {
         QString raw = obj.value("error").toString();
         emit authFailed(raw);
     }
+
     this->m_socket->disconnect();
 }
