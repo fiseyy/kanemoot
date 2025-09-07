@@ -38,9 +38,9 @@ void LoginPage::cleanup()
 
 }
 
-void LoginPage::tryAutoLogIn(const QString &jwt)
+void LoginPage::tryAutoLogIn(const QString &access_token)
 {
-    m_authmgr->tryAutoLogin(jwt);
+    m_authmgr->tryAutoTokenLogin(access_token);
 }
 
 QString LoginPage::qmlPath() const {

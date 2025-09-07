@@ -143,7 +143,7 @@ async def websocket_handler(request):
                     login=data.get("user", ""),
                     password=data.get("password", ""),
                     email=data.get("email", ""),
-                    token=data.get("jwt", "")
+                    token=data.get("token", "")
                 )
 
                 await ws.send_str(json.dumps(response_data))

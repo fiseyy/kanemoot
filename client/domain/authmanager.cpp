@@ -105,6 +105,7 @@ void AuthManager::onConnected()
 
 void AuthManager::onMessageReceived(const QString &text)
 {
+    qDebug() << text;
     QJsonDocument doc = QJsonDocument::fromJson(text.toUtf8());
     if (!doc.isObject()) {
         emit authFailed("Неверный формат ответа сервера");
@@ -113,10 +114,17 @@ void AuthManager::onMessageReceived(const QString &text)
         return;
     }
     QJsonObject obj = doc.object();
-    bool success = obj.value("success").toBool() == true;
+    bool success = false;
+    QJsonValue successVal = obj.value("success");
+    if (successVal.isBool()) {
+        success = successVal.toBool();
+    } else if (successVal.isString()) {
+        success = successVal.toString().toLower() == "true";
+    }
 
     QString jwt_token = obj.value("jwt").toString();
     QString access_token = obj.value("access_token").toString();
+
 
     if (success) {
         if (!jwt_token.isEmpty()) {

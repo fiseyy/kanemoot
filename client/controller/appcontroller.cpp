@@ -70,6 +70,7 @@ void AppController::start()
     if (access_opt.has_value()) {
         access_token = access_opt.value();
     }
+    qDebug() << access_token;
 
     if (!access_token.isEmpty()) {
         Logging::instance().log(Logging::Info, "Сессия найдена. Попытка восстановить пользователя по access-token...");
