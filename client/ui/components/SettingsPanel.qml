@@ -2,6 +2,7 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 import "../components" as Components
 import Themes 1.0
+import Core 1.0
 
 Item {
     id: root
@@ -142,15 +143,19 @@ Item {
                     Components.SettingToggle {
                         title: "Запускать KANEMOOT при запуске системы"
                         subtitle: "Приложение автоматически откроется при входе в систему"
-                        enabled: true
+                        enabled: SettingsManager.autoStart
                         width: parent.width
+                        onEnabledChanged: SettingsManager.autoStart = enabled
                     }
+
                     Components.SettingToggle {
                         title: "Включить обновления"
                         subtitle: "Загружать и устанавливать новые версии автоматически"
-                        enabled: false
+                        enabled: SettingsManager.enableUpdates
                         width: parent.width
+                        onEnabledChanged: SettingsManager.enableUpdates = enabled
                     }
+
                 }
             }
         }
@@ -170,29 +175,30 @@ Item {
                         ]
 
                         Component.onCompleted: {
-                            currentIndex = chatPage.currentTheme === LightTheme ? 0 : 1
+                            currentIndex = SettingsManager.theme === "light" ? 0 : 1
                         }
 
                         onCurrentIndexChanged: {
                             if (currentIndex === 0) {
+                                // chatPage.setTheme(true)
+                                SettingsManager.theme = "light"
                                 chatPage.currentTheme = LightTheme
                             } else {
+                                // chatPage.setTheme(false)
+                                SettingsManager.theme = "dark"
                                 chatPage.currentTheme = DarkTheme
                             }
                         }
                     }
 
+
                     Components.AccentColorSelector {
                         width: parent.width
                         height: parent.width
-                        onCurrentAccentChanged: {}
-                    }
 
-                    Components.SettingToggle {
-                        title: "Использовать компактные иконки"
-                        subtitle: ""
-                        enabled: false
-                        width: parent.width
+                        onCurrentAccentChanged: {
+                            SettingsManager.accentColor = currentAccent
+                        }
                     }
                 }
             }
@@ -213,15 +219,17 @@ Item {
                     Components.SettingToggle {
                         title: "Включить звук уведомлений"
                         subtitle: "Воспроизводить звук при получении уведомлений"
-                        enabled: true
+                        enabled: SettingsManager.notificationSound
                         width: parent.width
+                        onEnabledChanged: SettingsManager.notificationSound = enabled
                     }
 
                     Components.SettingToggle {
                         title: "Показывать уведомления на рабочем столе"
                         subtitle: "Отображать всплывающие уведомления, даже если приложение свернуто"
-                        enabled: false
+                        enabled: SettingsManager.showNotifications
                         width: parent.width
+                        onEnabledChanged: SettingsManager.showNotifications = enabled
                     }
 
                 }

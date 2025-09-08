@@ -2,12 +2,12 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 import "../components" as Components
 import Themes 1.0 as Themes
-
+import Core 1.0
 Item {
     anchors.fill: parent
     id: chatPage
     property var currentTheme: Themes.DarkTheme
-    property string accentColor: "#00C7D9"
+    property string accentColor: SettingsManager.accentColor
     property string username: ""
 
     Rectangle {

@@ -3,6 +3,7 @@
 #include "core/errorcode.h"
 #include "core/securestorage.h"
 #include "core/errorhandler.h"
+#include "core/settingsmanager.h"
 #include <QQmlComponent>
 #include <qqmlcontext.h>
 
@@ -50,7 +51,10 @@ void ChatPage::init()
         return;
     }
     QObject* loadingPage = root->findChild<QObject*>("loadingPage");
-    setTheme(false);
+
+    auto &settings = SettingsManager::instance();
+    setTheme(settings.theme() == "light");
+
     ErrorHandler::instance().setHiden(true);
     connect(this, &ChatPage::connectedToChat, [loadingPage]() {
         ErrorHandler::instance().setHiden(false);
@@ -88,7 +92,6 @@ void ChatPage::setTheme(bool useLightTheme) {
                                              : "qrc:/kanemoot/ui/themes/Dark.qml"));
     QObject* theme = component.create();
     if (!theme) {
-        // LOG(Logging::Critical, "Не удалось создать объект темы!");
         LOG(Logging::Critical, ErrorCode::make(ErrorCode::UI, 0x05, ErrorCode::ChatPage), "");
         return;
     }
