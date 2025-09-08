@@ -58,10 +58,10 @@ void testLogs() {
 void App::run()
 {
     engine = new QQmlApplicationEngine(this);
-    qmlRegisterSingletonType<SettingsManager>("Core", 1, 0, "SettingsManager",
-                                              [](QQmlEngine *, QJSEngine *) -> QObject* {
-                                                  return &SettingsManager::instance();
-                                              });
+
+    SettingsManager &settings = SettingsManager::instance();
+    qmlRegisterSingletonInstance<SettingsManager>("Core", 1, 0, "SettingsManager", &settings);
+
     appController = new AppController(this, engine);
 
     engine->rootContext()->setContextProperty("appController", appController);
