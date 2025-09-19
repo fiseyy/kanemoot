@@ -69,6 +69,7 @@ qt_add_qml_module(appkanemoot
     QML_FILES ui/components/SettingToggle.qml
     QML_FILES ui/components/SettingDropdown.qml
     QML_FILES ui/components/AccentColorSelector.qml
+    SOURCES utils/keycatcher.h utils/keycatcher.cpp
 
 )
 

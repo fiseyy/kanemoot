@@ -26,6 +26,7 @@ private:
     void setupDependencies();
     void setupSettings();
     void setupSecureStorage();
+    void setupKeyCatcher();
 
     QQmlApplicationEngine* engine = nullptr;
     AppController* appController = nullptr;

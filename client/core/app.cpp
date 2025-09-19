@@ -4,6 +4,7 @@
 #include "core/settingsmanager.h"
 #include "core/securestorage.h"
 #include "utils/logging.h"
+#include "utils/keycatcher.h"
 #include "core/errorcode.h"
 App::App(QObject *parent)
 {
@@ -71,6 +72,8 @@ void App::run()
         LOG(Logging::Critical, ErrorCode::make(ErrorCode::UI, 0x06, ErrorCode::App), "");
         qFatal("Failed to load QML");
     }
+
+    setupKeyCatcher();
     setTheme(true);
     appController->start();
     ErrorHandler::instance().init(engine);
@@ -182,5 +185,12 @@ void App::setupSecureStorage() {
     } else {
         LOG(Logging::Fatal, ErrorCode::make(ErrorCode::System, 0x02, ErrorCode::App), error);
     }
+}
+
+void App::setupKeyCatcher()
+{
+    KeyFilter *filter = new KeyFilter();
+    QQuickWindow* window = qobject_cast<QQuickWindow*>(engine->rootObjects().first());
+    window->installEventFilter(filter);
 }
 

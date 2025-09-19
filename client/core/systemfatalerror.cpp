@@ -38,7 +38,6 @@ void SystemFatalError::show(const QString &message)
     gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(dialog);
 #else
-    // fallback: вывод в консоль
     qWarning("Fatal Error: %s", qPrintable(message));
 #endif
 
