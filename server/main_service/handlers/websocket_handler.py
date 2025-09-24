@@ -78,6 +78,58 @@ async def websocket_handler(request):
                         for m in messages
                     ]
                 }))
+            elif action == "create_server":
+                name = data.get("name")
+                if not name:
+                    await ws.send_str(json.dumps({"action": "create_server", "success": False, "error": "Server name required"}))
+                    continue
+
+                # создаём URL для сервера (например, безопасный хеш)
+                import uuid
+                url = f"https://server.kanemoot.ru/{uuid.uuid4().hex[:8]}"
+
+                from models import SessionLocal, Server, Membership
+
+                db = SessionLocal()
+                try:
+                    new_server = Server(
+                        name=name,
+                        avatar_url="",  # дефолт пустой
+                        url=url
+                    )
+                    db.add(new_server)
+                    db.commit()
+                    db.refresh(new_server)
+
+                    # добавляем пользователя как owner
+                    membership = Membership(
+                        guild_id=new_server.id,
+                        user_id=user_id,
+                        role="owner"
+                    )
+                    db.add(membership)
+                    db.commit()
+
+                    await ws.send_str(json.dumps({
+                        "action": "create_server",
+                        "success": True,
+                        "error": "",
+                        "server": {
+                            "id": new_server.id,
+                            "name": new_server.name,
+                            "avatar_url": new_server.avatar_url,
+                            "url": new_server.url
+                        }
+                    }))
+                except Exception as e:
+                    db.rollback()
+                    await ws.send_str(json.dumps({
+                        "action": "create_server",
+                        "success": False,
+                        "error": f"Failed to create server: {str(e)}"
+                    }))
+                finally:
+                    db.close()
 
             elif action == "get_user_servers":
                 servers = server_service.get_user_servers(user_id)

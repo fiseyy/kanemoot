@@ -74,7 +74,7 @@ bool ChatManager::isConnected() const {
 
 void ChatManager::onConnected()
 {
-    emit connected();
+    // emit connected();
     while (!m_pendingMessages.isEmpty()) {
         m_socket->sendMessage(m_pendingMessages.dequeue());
     }
@@ -106,9 +106,11 @@ void ChatManager::onMessageReceived(const QString &text)
     if (action == "user_servers") {
         QJsonArray servers = obj["servers"].toArray();
         emit userServersReceived(servers);
-    } else {
-        emit messageReceived(text);
     }
+    // else if (action == "") {
+
+    // }
+
 }
 
 void ChatManager::requestUserServers() {
@@ -128,6 +130,40 @@ void ChatManager::requestUserServers() {
     }
 
     obj["jwt"] = jwt_token;
+
+    QJsonDocument doc(obj);
+    sendMessage(QString::fromUtf8(doc.toJson(QJsonDocument::Compact)));
+}
+
+void ChatManager::joinServer(const QString &inviteLink) {
+    QJsonObject obj;
+    obj["action"] = "join_server";
+    obj["url"] = inviteLink;
+
+    auto jwt_opt = SecureStorage::instance().getValue("jwt-token");
+    if (jwt_opt.has_value())
+        obj["jwt"] = jwt_opt.value();
+    else {
+        Logging::instance().log(Logging::Warning, "JWT отсутствует, join_server не отправлен");
+        return;
+    }
+
+    QJsonDocument doc(obj);
+    sendMessage(QString::fromUtf8(doc.toJson(QJsonDocument::Compact)));
+}
+
+void ChatManager::createServer(const QString &name) {
+    QJsonObject obj;
+    obj["action"] = "create_server";
+    obj["name"] = name;
+
+    auto jwt_opt = SecureStorage::instance().getValue("jwt-token");
+    if (jwt_opt.has_value())
+        obj["jwt"] = jwt_opt.value();
+    else {
+        Logging::instance().log(Logging::Warning, "JWT отсутствует, create_server не отправлен");
+        return;
+    }
 
     QJsonDocument doc(obj);
     sendMessage(QString::fromUtf8(doc.toJson(QJsonDocument::Compact)));

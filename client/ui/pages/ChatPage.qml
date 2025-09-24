@@ -10,7 +10,6 @@ Item {
     property string accentColor: SettingsManager.accentColor
     property string username: ""
     property string userAvatar: ""
-
     Rectangle {
         anchors.fill: parent
         color: currentTheme.loadingBackground

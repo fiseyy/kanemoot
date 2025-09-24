@@ -1,14 +1,16 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import Themes 1.0
-
+import Core 1.0
 Item {
     id: addServerOverlay
+    objectName: "addServerOverlay"
     anchors.fill: parent
     visible: false
     z: 99
-
     property bool clearFieldsAfterHide: false
+    signal joinServerRequested(string invite)
+    signal createServerRequested(string name)
 
     // --- затемнённый фон ---
     Rectangle {
@@ -137,8 +139,11 @@ Item {
                             onReleased: joinBtnBg.color = joinBtnBg.hovered ? "#4752C4" : "#5865F2"
                             onClicked: {
                                 console.log("Join server:", joinServerField.text)
-                                clearFieldsAfterHide = true
-                                addServerOverlay.hide()
+                                if (joinServerField.text !== "") {
+                                    joinServerRequested(joinServerField.text)
+                                    clearFieldsAfterHide = true
+                                    addServerOverlay.hide()
+                                }
                             }
                         }
                     }
@@ -199,8 +204,11 @@ Item {
                             onReleased: createBtnBg.color = createBtnBg.hovered ? "#369970" : "#43B581"
                             onClicked: {
                                 console.log("Create server:", createServerField.text)
-                                clearFieldsAfterHide = true
-                                addServerOverlay.hide()
+                                if (createServerField.text !== "") {
+                                    createServerRequested(createServerField.text)
+                                    clearFieldsAfterHide = true
+                                    addServerOverlay.hide()
+                                }
                             }
                         }
                     }

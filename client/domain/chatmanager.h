@@ -15,6 +15,9 @@ public:
     bool isConnected() const;
     void requestUserServers();
 
+    void joinServer(const QString &inviteLink);
+    void createServer(const QString &name);
+
 signals:
     void connected();
     void disconnected();

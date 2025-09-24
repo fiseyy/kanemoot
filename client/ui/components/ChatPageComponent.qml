@@ -11,7 +11,6 @@ Item {
 
     property bool micMuted: false
     property bool headsetMuted: false
-
     Rectangle {
         anchors.fill: parent
         color: "#292929"

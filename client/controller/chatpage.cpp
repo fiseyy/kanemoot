@@ -53,11 +53,24 @@ void ChatPage::init()
         LOG(Logging::Critical, ErrorCode::make(ErrorCode::UI, 0x06, ErrorCode::ChatPage), "");
         return;
     }
+
     QObject* editPopup = root->findChild<QObject*>("editPopup");
     if(editPopup) {
         connect(editPopup, SIGNAL(logoutRequested()),
                 this, SLOT(logoutRedirect()));
     }
+
+    QObject* addServerOverlay = root->findChild<QObject*>("addServerOverlay");
+    if (addServerOverlay) {
+        connect(addServerOverlay, SIGNAL(joinServerRequested(QString)),
+                this, SLOT(joinServer(QString)));
+        connect(addServerOverlay, SIGNAL(createServerRequested(QString)),
+                this, SLOT(createServer(QString)));
+    }
+    else {
+        qWarning() << "addServerOverlay не найден";
+    }
+
 
     QObject* loadingPage = root->findChild<QObject*>("loadingPage");
 
@@ -127,6 +140,16 @@ QObject* ChatPage::currentTheme() const {
 QString ChatPage::qmlPath() const
 {
     return "qrc:/kanemoot/ui/pages/ChatPage.qml";
+}
+
+void ChatPage::joinServer(const QString &inviteLink) {
+    if (m_chatmgr)
+        m_chatmgr->joinServer(inviteLink);
+}
+
+void ChatPage::createServer(const QString &name) {
+    if (m_chatmgr)
+        m_chatmgr->createServer(name);
 }
 
 void ChatPage::logoutRedirect()

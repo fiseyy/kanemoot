@@ -18,6 +18,9 @@ public:
 signals:
     void connectedToChat();
 public slots:
+    Q_INVOKABLE void joinServer(const QString &inviteLink);
+    Q_INVOKABLE void createServer(const QString &name);
+
     void logoutRedirect();
 private:
     void fail(const QString& error);
