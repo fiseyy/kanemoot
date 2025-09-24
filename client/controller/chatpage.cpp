@@ -6,7 +6,7 @@
 #include "core/settingsmanager.h"
 #include <QQmlComponent>
 #include <qqmlcontext.h>
-
+#include <QJsonArray>
 ChatPage::ChatPage(QObject *parent) {
     m_chatmgr = new ChatManager(this);
     m_reconnectTimer = new QTimer(this);
@@ -17,6 +17,9 @@ ChatPage::ChatPage(QObject *parent) {
             Logging::instance().log(Logging::Debug, "Пробуем переподключиться к Chat Service...");
             m_chatmgr->connectToChat();
         }
+    });
+    connect(m_chatmgr, &ChatManager::userServersReceived, this, [this](const QJsonArray &servers){
+        qDebug() << "Серверы пользователя:" << servers;
     });
 
     connect(m_chatmgr, &ChatManager::connected, [this]() {
@@ -56,7 +59,7 @@ void ChatPage::init()
     setTheme(settings.theme() == "light");
 
     ErrorHandler::instance().setHiden(true);
-    connect(this, &ChatPage::connectedToChat, [loadingPage]() {
+    connect(this, &ChatPage::connectedToChat, [loadingPage, this]() {
         ErrorHandler::instance().setHiden(false);
         if (loadingPage) {
             QMetaObject::invokeMethod(loadingPage, "hide");
@@ -64,6 +67,7 @@ void ChatPage::init()
         else {
             LOG(Logging::Critical, ErrorCode::make(ErrorCode::UI, 0x0A, ErrorCode::ChatPage), "loadingPage не объявлен");
         }
+        m_chatmgr->requestUserServers();
     });
     m_chatmgr->connectToChat();
     QString username;

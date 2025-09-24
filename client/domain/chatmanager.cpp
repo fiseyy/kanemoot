@@ -2,7 +2,11 @@
 #include "utils/logging.h"
 #include "core/errorcode.h"
 #include "core/apiendpoints.h"
+#include "core/securestorage.h"
 #include <QTimer>
+#include <QJsonParseError>
+#include <QJsonArray>
+#include <QJsonObject>
 
 ChatManager::ChatManager(QObject *parent)
 {
@@ -88,5 +92,43 @@ void ChatManager::onDisconnected()
 
 void ChatManager::onMessageReceived(const QString &text)
 {
-    emit messageReceived(text);
+    qDebug() << "RECEIVED " << text;
+    QJsonParseError err;
+    QJsonDocument doc = QJsonDocument::fromJson(text.toUtf8(), &err);
+    if (err.error != QJsonParseError::NoError || !doc.isObject()) {
+        LOG(Logging::Warning, ErrorCode::make(ErrorCode::Network, 0x02, ErrorCode::ChatManager), "Invalid JSON");
+        return;
+    }
+
+    QJsonObject obj = doc.object();
+    QString action = obj["action"].toString();
+
+    if (action == "user_servers") {
+        QJsonArray servers = obj["servers"].toArray();
+        emit userServersReceived(servers);
+    } else {
+        emit messageReceived(text);
+    }
+}
+
+void ChatManager::requestUserServers() {
+    QJsonObject obj;
+    obj["action"] = "get_user_servers";
+
+    auto jwt_opt = SecureStorage::instance().getValue("jwt-token");
+    QString jwt_token;
+
+    if (jwt_opt.has_value()) {
+        jwt_token = jwt_opt.value();
+    }
+
+    if (jwt_token.isEmpty()) {
+        Logging::instance().log(Logging::Warning, "JWT отсутствует, запрос серверов не отправлен");
+        return;
+    }
+
+    obj["jwt"] = jwt_token;
+
+    QJsonDocument doc(obj);
+    sendMessage(QString::fromUtf8(doc.toJson(QJsonDocument::Compact)));
 }

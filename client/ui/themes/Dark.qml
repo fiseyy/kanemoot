@@ -57,4 +57,9 @@ QtObject {
 
     property color settingsLineColor: Qt.rgba(1,1,1,0.08)
 
+    property color addServerBtnBg: "#101010"
+    property color addServerBtnBorder: "#1f1f23"
+
+    property string addServerIcon: "qrc:///assets/dark/add-server.png"
+
 }

@@ -46,6 +46,42 @@ Item {
                 source: kanemootLogo
                 color: chatPage.accentColor
             }
+            Rectangle {
+                id: addServerBtn
+                width: 50
+                height: 50
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: 18
+                radius: 8
+                color: chatPage.currentTheme.addServerBtnBg
+                border.color: chatPage.currentTheme.addServerBtnBorder
+                border.width: 1
+
+                Image {
+                    anchors.centerIn: parent
+                    source: chatPage.currentTheme.addServerIcon  // плюсик
+                    width: 48
+                    height: 48
+                    fillMode: Image.PreserveAspectFit
+                    smooth: true
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    hoverEnabled: true
+
+                    onClicked: addServerPopup.show()
+
+                    onPressed: addServerBtn.opacity = 0.5
+                    onReleased: addServerBtn.opacity = 1
+                    onEntered: addServerBtn.opacity = 0.7
+                    onExited: addServerBtn.opacity = 1
+                }
+            }
+
+
         }
 
         // Средняя панель
@@ -523,4 +559,8 @@ Item {
     Components.SettingsOverlay {
         id: settingsOverlay
     }
+    Components.AddServerPopup {
+        id: addServerPopup
+    }
+
 }

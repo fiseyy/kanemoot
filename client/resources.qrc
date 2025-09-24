@@ -35,5 +35,7 @@
         <file>assets/dark/toggle-on.svg</file>
         <file>assets/light/toggle-off.svg</file>
         <file>assets/light/toggle-on.svg</file>
+        <file>assets/dark/add-server.png</file>
+        <file>assets/light/add-server.png</file>
     </qresource>
 </RCC>

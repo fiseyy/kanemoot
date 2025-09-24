@@ -56,4 +56,9 @@ QtObject {
     property color settingsText: "#000000"
 
     property color settingsLineColor: Qt.rgba(0,0,0,0.08)
+
+    property color addServerBtnBg: "#FFFFFF"
+    property color addServerBtnBorder: "#CCCCCC"    // чуть темнее для границы
+
+    property string addServerIcon: "qrc:///assets/light/add-server.png"
 }

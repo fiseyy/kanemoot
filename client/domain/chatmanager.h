@@ -13,12 +13,14 @@ public:
     void connectToChat();
     void sendMessage(const QString &text);
     bool isConnected() const;
+    void requestUserServers();
 
 signals:
     void connected();
     void disconnected();
     void messageReceived(const QString &text);
     void errorOccurred(const QString &error);
+    void userServersReceived(const QJsonArray &servers);
 
 private slots:
     void onConnected();
