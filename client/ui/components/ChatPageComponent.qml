@@ -293,7 +293,13 @@ Item {
                         anchors.fill: parent
                         cursorShape: Qt.PointingHandCursor
                         hoverEnabled: true
-                        onClicked: editPopup.toggle()
+                        onClicked: {
+                                if (editPopup.justClosed) {
+                                    // игнорируем клик, иначе он откроет popup сразу после закрытия
+                                    return;
+                                }
+                                editPopup.toggle();
+                            }
                         onEntered: myInfoEditHover.color = chatPage.currentTheme.myInfoEditHoverColor
                         onExited: myInfoEditHover.color = "transparent"
                     }

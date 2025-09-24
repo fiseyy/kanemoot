@@ -15,7 +15,19 @@ Popup {
     opacity: 0
     scale: 0.8
     property bool isOpen: false
+    property bool justClosed: false
 
+    onClosed: {
+        opacity = 0; scale = 0.8; isOpen = false;
+        justClosed = true;
+        reopenBlockTimer.restart();
+    }
+    Timer {
+        id: reopenBlockTimer
+        interval: 250
+        repeat: false
+        onTriggered: editPopup.justClosed = false
+    }
     signal logoutRequested()
 
     function toggle() {
@@ -24,7 +36,6 @@ Popup {
     }
 
     onOpened: { opacity = 1; scale = 1; isOpen = true}
-    onClosed: { opacity = 0; scale = 0.8; isOpen = false}
 
     Behavior on opacity { NumberAnimation { duration: 180; easing.type: Easing.InOutQuad } }
     Behavior on scale { NumberAnimation { duration: 180; easing.type: Easing.InOutQuad } }
