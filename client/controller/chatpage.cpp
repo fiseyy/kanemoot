@@ -53,6 +53,12 @@ void ChatPage::init()
         LOG(Logging::Critical, ErrorCode::make(ErrorCode::UI, 0x06, ErrorCode::ChatPage), "");
         return;
     }
+    QObject* editPopup = root->findChild<QObject*>("editPopup");
+    if(editPopup) {
+        connect(editPopup, SIGNAL(logoutRequested()),
+                this, SLOT(logoutRedirect()));
+    }
+
     QObject* loadingPage = root->findChild<QObject*>("loadingPage");
 
     auto &settings = SettingsManager::instance();
@@ -80,10 +86,18 @@ void ChatPage::init()
 }
 
 
-void ChatPage::cleanup()
-{
-
+void ChatPage::cleanup() {
+    if (m_chatmgr) {
+        m_chatmgr->deleteLater();
+        m_chatmgr = nullptr;
+    }
+    if (m_reconnectTimer) {
+        m_reconnectTimer->stop();
+        m_reconnectTimer->deleteLater();
+        m_reconnectTimer = nullptr;
+    }
 }
+
 
 void ChatPage::setTheme(bool useLightTheme) {
     QObject* rootItem = getRootObject();
@@ -113,4 +127,16 @@ QObject* ChatPage::currentTheme() const {
 QString ChatPage::qmlPath() const
 {
     return "qrc:/kanemoot/ui/pages/ChatPage.qml";
+}
+
+void ChatPage::logoutRedirect()
+{
+    qDebug() << "C++ LOGOUT";
+
+    QObject* root = getRootObject();
+    if (!root) return;
+    SecureStorage::instance().removeValue("access-token");
+    SecureStorage::instance().removeValue("jwt-token");
+    emit callSkipAnim();
+    emit requestPageChange(Page_Login);
 }

@@ -62,4 +62,8 @@ QtObject {
 
     property string addServerIcon: "qrc:///assets/dark/add-server.png"
 
+    // Popup / кнопки внутри popup
+    property color popupButtonHover: Qt.rgba(1,1,1,0.05)       // лёгкое подсвечивание
+    property color popupButtonText: "#FFFFFF"                   // текст кнопок
+    property color popupLogoutButton: "#FF4C4C"                // красная кнопка выхода
 }

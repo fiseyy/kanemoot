@@ -9,6 +9,7 @@ Item {
     property var currentTheme: Themes.DarkTheme
     property string accentColor: SettingsManager.accentColor
     property string username: ""
+    property string userAvatar: ""
 
     Rectangle {
         anchors.fill: parent

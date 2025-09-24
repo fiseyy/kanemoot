@@ -20,6 +20,7 @@ void AppController::setCurrentPage(BasePage *newPage)
     }
 
     connect(newPage, &BasePage::requestPageChange, this, &AppController::onPageChangeRequested);
+    connect(newPage, &BasePage::callSkipAnim, this, &AppController::callSkipAnim);
 
     if (!engine) {
         LOG(Logging::Critical, ErrorCode::make(ErrorCode::UI, 0x01, ErrorCode::AppController), "Engine QML не инициализирован");
@@ -95,12 +96,22 @@ void AppController::start()
 
 }
 
+void AppController::callSkipAnim()
+{
+    this->skipAnim = true;
+}
+
 
 void AppController::onPageChangeRequested(int newPageId)
 {
     BasePage* newPage = nullptr;
     switch(newPageId) {
-        case Page_Login: newPage = new LoginPage(this); break;
+        case Page_Login:
+            newPage = new LoginPage(this);
+            if(this->skipAnim)
+                newPage->setProperty("skipAnimations", true);
+            skipAnim = false;
+            break;
         case Page_Register: newPage = new RegistrationPage(this); break;
         case Page_Chat: newPage = new ChatPage(this); break;
     }

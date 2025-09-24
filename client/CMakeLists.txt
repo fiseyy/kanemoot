@@ -71,6 +71,7 @@ qt_add_qml_module(appkanemoot
     QML_FILES ui/components/AccentColorSelector.qml
     SOURCES utils/keycatcher.h utils/keycatcher.cpp
     QML_FILES ui/components/AddServerPopup.qml
+    QML_FILES ui/components/EditPopup.qml
 
 )
 

@@ -16,7 +16,6 @@ public:
     void cleanup() override;
     void tryAutoLogIn(const QString& access_token);
     QString qmlPath() const override;
-
 private:
     void fail(const QString& error);
     AuthManager* m_authmgr = nullptr;

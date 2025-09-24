@@ -8,6 +8,7 @@ Item {
     signal loginAttempted(string username, string password)
     signal regRedirectRequested()
     property bool regRedirectPending: false
+    property bool skipAnimations: false
 
     function checkRedirect() {
         if (!leftColumnHideAnim.running &&
@@ -18,40 +19,6 @@ Item {
             regRedirectRequested();
         }
     }
-
-    // property bool bgEnabled: true
-
-    // AnimatedBackground {
-    //     id: bg
-    //     anchors.fill: parent
-    //     enabled: loginPage.bgEnabled
-    // }
-
-    // Rectangle {
-    //     anchors.fill: parent
-    //     color: "transparent"
-    //     visible: bgEnabled
-    // }
-
-    // Rectangle {
-    //     anchors.fill: parent
-    //     color: "#0e0e0e"
-    //     visible: !bgEnabled
-    // }
-
-    // Image {
-    //     id: toggleIcon
-    //     source: bgEnabled ? "qrc:///assets/icons/toggle_on.svg" : "qrc:///assets/icons/toggle_off.svg"
-    //     anchors.bottom: parent.bottom
-    //     anchors.right: parent.right
-    //     anchors.margins: 12
-    //     smooth: true
-    //     MouseArea {
-    //         anchors.fill: parent
-    //         cursorShape: Qt.PointingHandCursor
-    //         onClicked: bgEnabled = !bgEnabled
-    //     }
-    // }
 
     Image {
         anchors.fill: parent
@@ -204,7 +171,7 @@ Item {
                     property: "opacity"
                     from: 0
                     to: 1
-                    duration: 400
+                    duration: skipAnimations ? 0 : 300
                     easing.type: Easing.InOutQuad
                     onRunningChanged: {
                         if (running) {
@@ -219,7 +186,7 @@ Item {
                     property: "y"
                     from: 20
                     to: 0
-                    duration: 400
+                    duration: skipAnimations ? 0 : 300
                     easing.type: Easing.InOutQuad
             }
 
@@ -229,7 +196,7 @@ Item {
                     property: "opacity"
                     from: 0
                     to: 1
-                    duration: 400
+                    duration: skipAnimations ? 0 : 300
                     easing.type: Easing.InOutQuad
                     onRunningChanged: {
                         if (running) {
@@ -243,7 +210,7 @@ Item {
                     property: "y"
                     from: 20
                     to: 0
-                    duration: 400
+                    duration: skipAnimations ? 0 : 300
                     easing.type: Easing.InOutQuad
             }
 

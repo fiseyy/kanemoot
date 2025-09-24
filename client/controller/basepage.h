@@ -28,6 +28,7 @@ public:
 
 signals:
     void requestPageChange(int pageId);
+    void callSkipAnim();
 protected:
     QObject* m_rootObject = nullptr;
 };

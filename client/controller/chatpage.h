@@ -17,6 +17,8 @@ public:
     QString qmlPath() const override;
 signals:
     void connectedToChat();
+public slots:
+    void logoutRedirect();
 private:
     void fail(const QString& error);
 

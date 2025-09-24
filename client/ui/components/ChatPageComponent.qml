@@ -297,59 +297,11 @@ Item {
                         onEntered: myInfoEditHover.color = chatPage.currentTheme.myInfoEditHoverColor
                         onExited: myInfoEditHover.color = "transparent"
                     }
-                    Popup {
+                    Components.EditPopup {
                         id: editPopup
-                        modal: false
-                        width: 336
-                        height: 120
                         x: myInfoRectangle.x - 10
                         y: myInfoEditRectangle.y - 5 - height
-                        background: Rectangle { color: "transparent" }
-                        opacity: 0
-                        scale: 0.8
-
-                        property bool isOpen: false
-
-                        function toggle() {
-                            if (isOpen) {
-                                close()
-                                isOpen = false
-                            } else {
-                                open()
-                                isOpen = true
-                            }
-                        }
-
-                        onOpened: {
-                            opacity = 1
-                            scale = 1
-                        }
-                        onClosed: {
-                            opacity = 0
-                            scale = 0.8
-                        }
-
-                        Behavior on opacity {
-                            NumberAnimation { duration: 180; easing.type: Easing.InOutQuad }
-                        }
-                        Behavior on scale {
-                            NumberAnimation { duration: 180; easing.type: Easing.InOutQuad }
-                        }
-
-                        Rectangle {
-                            anchors.fill: parent
-                            color: chatPage.currentTheme.myInfoRectangle
-                            border.color: chatPage.currentTheme.myInfoRectangleBorder
-                            border.width: 1
-                            radius: 8
-                            Text {
-                                anchors.centerIn: parent
-                                text: "Изменить пользователя"
-                                color: chatPage.currentTheme.settingsText
-                            }
-                        }
                     }
-
                 }
                 Image {
                     id: muteMicroBtn

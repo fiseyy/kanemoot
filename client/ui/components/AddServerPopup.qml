@@ -8,6 +8,8 @@ Item {
     visible: false
     z: 99
 
+    property bool clearFieldsAfterHide: false
+
     // --- затемнённый фон ---
     Rectangle {
         id: dimBackground
@@ -32,6 +34,7 @@ Item {
         border.width: 1
         opacity: 0
         scale: 0.8
+
         MouseArea { anchors.fill: parent; acceptedButtons: Qt.AllButtons }
 
         // --- крестик закрытия ---
@@ -132,7 +135,11 @@ Item {
                             hoverEnabled: true
                             onPressed: joinBtnBg.color = "#4752C4"
                             onReleased: joinBtnBg.color = joinBtnBg.hovered ? "#4752C4" : "#5865F2"
-                            onClicked: console.log("Join server:", joinServerField.text)
+                            onClicked: {
+                                console.log("Join server:", joinServerField.text)
+                                clearFieldsAfterHide = true
+                                addServerOverlay.hide()
+                            }
                         }
                     }
                 }
@@ -190,7 +197,11 @@ Item {
                             hoverEnabled: true
                             onPressed: createBtnBg.color = "#369970"
                             onReleased: createBtnBg.color = createBtnBg.hovered ? "#369970" : "#43B581"
-                            onClicked: console.log("Create server:", createServerField.text)
+                            onClicked: {
+                                console.log("Create server:", createServerField.text)
+                                clearFieldsAfterHide = true
+                                addServerOverlay.hide()
+                            }
                         }
                     }
                 }
@@ -225,7 +236,16 @@ Item {
         property: "opacity"
         duration: 200
         easing.type: Easing.OutQuad
-        onStopped: { if (windowOpacityAnim.to === 0) visible = false }
+        onStopped: {
+            if (windowOpacityAnim.to === 0) {
+                addServerOverlay.visible = false
+                if (clearFieldsAfterHide) {
+                    joinServerField.text = ""
+                    createServerField.text = ""
+                    clearFieldsAfterHide = false
+                }
+            }
+        }
     }
 
     NumberAnimation {

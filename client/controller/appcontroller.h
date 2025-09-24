@@ -15,11 +15,13 @@ public:
     explicit AppController(QObject* parent = nullptr, QQmlApplicationEngine* engine = nullptr);
     void setCurrentPage(BasePage* newPage);
     void start();
+    void callSkipAnim();
 public slots:
     void onPageChangeRequested(int newPageId);
 private:
     BasePage* currentPage = nullptr;
     QQmlApplicationEngine* engine = nullptr;
+    bool skipAnim = false;
 };
 
 #endif // APPCONTROLLER_H
