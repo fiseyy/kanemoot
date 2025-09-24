@@ -7,6 +7,8 @@
 #include <QQmlComponent>
 #include <qqmlcontext.h>
 #include <QJsonArray>
+#include <QJsonObject>
+#include <QQuickItem>
 ChatPage::ChatPage(QObject *parent) {
     m_chatmgr = new ChatManager(this);
     m_reconnectTimer = new QTimer(this);
@@ -19,8 +21,53 @@ ChatPage::ChatPage(QObject *parent) {
         }
     });
     connect(m_chatmgr, &ChatManager::userServersReceived, this, [this](const QJsonArray &servers){
-        qDebug() << "Серверы пользователя:" << servers;
+        QObject* root = getRootObject();
+        if(!root) return;
+
+        QObject* chatPageContent = root->findChild<QObject*>("chatPageContent");
+        if(!chatPageContent) return;
+
+        QObject* userServersColumn = chatPageContent->findChild<QObject*>("userServersColumn");
+        if(!userServersColumn) return;
+
+        const auto children = userServersColumn->children();
+        for(QObject* c : children) c->deleteLater();
+
+        QQmlEngine* engine = QQmlEngine::contextForObject(root)->engine();
+
+        for(const auto &s_val : servers){
+            QJsonObject s = s_val.toObject();
+
+            QQmlContext* context = new QQmlContext(engine->rootContext());
+            context->setContextProperty("serverData", s);
+            context->setContextProperty("chatPage", getRootObject());
+
+            QQmlComponent comp(engine, QUrl("qrc:///kanemoot/ui/components/ServerItem.qml"));
+            if (comp.status() != QQmlComponent::Ready) {
+                qWarning() << "ServerItem component is not ready:" << comp.errorString();
+                continue;
+            }
+
+            QObject* serverItemObj = comp.create(context);
+            if (!serverItemObj) {
+                qWarning() << "Не удалось создать серверный компонент:" << comp.errorString();
+                continue;
+            }
+
+
+            if (serverItemObj) {
+                QQuickItem* serverItem = qobject_cast<QQuickItem*>(serverItemObj);
+                QQuickItem* columnItem = qobject_cast<QQuickItem*>(userServersColumn);
+                if (serverItem && columnItem) {
+                    serverItem->setParentItem(columnItem);
+                }
+            } else {
+                qWarning() << "Не удалось создать серверный компонент";
+            }
+        }
     });
+
+
 
     connect(m_chatmgr, &ChatManager::connected, [this]() {
         m_reconnectTimer->stop();

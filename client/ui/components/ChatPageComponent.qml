@@ -6,6 +6,7 @@ import Themes 1.0
 
 Item {
     id: chatPageContent
+    objectName: "chatPageContent"
     anchors.fill: parent
     property string openedChatType: "dm" // "server" / "dm"
 
@@ -44,6 +45,15 @@ Item {
                 anchors.fill: kanemootLogo
                 source: kanemootLogo
                 color: chatPage.accentColor
+            }
+            Column {
+                id: userServersColumn
+                objectName: "userServersColumn"
+                anchors.top: leftPanel.top
+                anchors.left: leftPanel.left
+                anchors.leftMargin: 5
+                anchors.topMargin: 70
+                spacing: 10
             }
             Rectangle {
                 id: addServerBtn
