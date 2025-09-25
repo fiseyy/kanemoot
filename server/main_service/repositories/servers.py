@@ -44,3 +44,34 @@ class ServerRepository:
                 db.commit()
         finally:
             db.close()
+    def get_membership(self, user_id: int, server_id: int):
+        db = self.db()
+        try:
+            return db.query(Membership).filter(
+                Membership.user_id == user_id,
+                Membership.guild_id == server_id
+            ).first()
+        finally:
+            db.close()
+
+    def create_channel(self, server_id: int, name: str, type_: str):
+        db = self.db()
+        try:
+            channel = Channel(server_id=server_id, name=name, type=type_)
+            db.add(channel)
+            db.commit()
+            db.refresh(channel)
+            return channel
+        finally:
+            db.close()
+    def delete_channel(self, channel_id: int):
+        db = self.db()
+        try:
+            channel = db.query(Channel).filter(Channel.id == channel_id).first()
+            if not channel:
+                return False, "Channel not found"
+            db.delete(channel)
+            db.commit()
+            return True, None
+        finally:
+            db.close()

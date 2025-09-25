@@ -78,6 +78,64 @@ async def websocket_handler(request):
                         for m in messages
                     ]
                 }))
+            elif action == "create_channel":
+                server_id = data.get("server_id")
+                name = data.get("channel_name")
+                type_ = data.get("channel_type", "text")
+
+                if not server_id or not name:
+                    await ws.send_str(json.dumps({
+                        "action": "create_channel",
+                        "success": False,
+                        "error": "server_id and channel_name required"
+                    }))
+                    continue
+
+                success, result = server_service.create_channel(user_id, server_id, name, type_)
+                if not success:
+                    await ws.send_str(json.dumps({
+                        "action": "create_channel",
+                        "success": False,
+                        "error": result
+                    }))
+                    continue
+
+                await ws.send_str(json.dumps({
+                    "action": "create_channel",
+                    "success": True,
+                    "channel": {
+                        "id": result.id,
+                        "name": result.name,
+                        "type": result.type
+                    }
+                }))
+            elif action == "delete_channel":
+                server_id = data.get("server_id")
+                channel_id = data.get("channel_id")
+
+                if not server_id or not channel_id:
+                    await ws.send_str(json.dumps({
+                        "action": "delete_channel",
+                        "success": False,
+                        "error": "server_id and channel_id required"
+                    }))
+                    continue
+
+                success, err = server_service.delete_channel(user_id, server_id, channel_id)
+                if not success:
+                    await ws.send_str(json.dumps({
+                        "action": "delete_channel",
+                        "success": False,
+                        "error": err
+                    }))
+                    continue
+
+                await ws.send_str(json.dumps({
+                    "action": "delete_channel",
+                    "success": True,
+                    "channel_id": channel_id
+                }))
+
             elif action == "create_server":
                 name = data.get("name")
                 if not name:
