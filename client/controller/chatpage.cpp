@@ -21,6 +21,8 @@ ChatPage::ChatPage(QObject *parent) {
         }
     });
     connect(m_chatmgr, &ChatManager::userServersReceived, this, [this](const QJsonArray &servers){
+        qDebug() << "[ChatPage] userServersReceived, серверов пришло:" << servers.size();
+
         QObject* root = getRootObject();
         if(!root) return;
 
@@ -30,8 +32,17 @@ ChatPage::ChatPage(QObject *parent) {
         QObject* userServersColumn = chatPageContent->findChild<QObject*>("userServersColumn");
         if(!userServersColumn) return;
 
-        const auto children = userServersColumn->children();
-        for(QObject* c : children) c->deleteLater();
+
+        QQuickItem* columnItem = qobject_cast<QQuickItem*>(userServersColumn);
+        qDebug() << "[ChatPage] очищаем userServersColumn перед добавлением, детей:" << columnItem->childItems().size();
+        if (columnItem) {
+            const auto items = columnItem->childItems();
+            for (QQuickItem* item : items) {
+                item->setParentItem(nullptr);
+                delete item;
+            }
+        }
+
 
         QQmlEngine* engine = QQmlEngine::contextForObject(root)->engine();
 
@@ -60,6 +71,7 @@ ChatPage::ChatPage(QObject *parent) {
                 QQuickItem* columnItem = qobject_cast<QQuickItem*>(userServersColumn);
                 if (serverItem && columnItem) {
                     serverItem->setParentItem(columnItem);
+                    serverItem->setObjectName(QString("server_%1").arg(s["id"].toInt()));
                 }
             } else {
                 qWarning() << "Не удалось создать серверный компонент";
@@ -73,8 +85,9 @@ ChatPage::ChatPage(QObject *parent) {
         m_reconnectTimer->stop();
         if(m_showingLoading)
             m_showingLoading = false;
-            emit connectedToChat();
+        emit connectedToChat();
     });
+
     connect(m_chatmgr, &ChatManager::disconnected, [this]() {
         Logging::instance().log(Logging::Debug, "Отключено от Chat Service.");
 
