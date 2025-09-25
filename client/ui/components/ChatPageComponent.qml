@@ -23,7 +23,6 @@ Item {
             anchors.top: parent.top
             anchors.bottom: parent.bottom
             anchors.left: parent.left
-            // color: "#272729"
             color: chatPage.currentTheme.leftPanel
 
             Image {
