@@ -37,8 +37,25 @@ Item {
                 fillMode: Image.PreserveAspectFit
                 smooth: true
                 layer.enabled: true
-                visible: false
+                visible: true
+
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    hoverEnabled: true
+                    onClicked: {
+                        chatPageContent.openedChatType = "none"
+                        chatArea.currentChannelId = -1
+                        chatArea.currentServerId = -1
+                        chatArea.chatType = "none"
+                        chatArea.currentChannel = null
+                        chatArea.serverData = null
+                    }
+                    onEntered: kanemootLogo.opacity = 0.7
+                    onExited: kanemootLogo.opacity = 1
+                }
             }
+
 
             ColorOverlay {
                 anchors.fill: kanemootLogo
@@ -68,7 +85,7 @@ Item {
 
                 Image {
                     anchors.centerIn: parent
-                    source: chatPage.currentTheme.addServerIcon  // плюсик
+                    source: chatPage.currentTheme.addServerIcon
                     width: 48
                     height: 48
                     fillMode: Image.PreserveAspectFit
@@ -197,19 +214,6 @@ Item {
                 }
             }
 
-
-            // Text {
-            //     id: dmText
-            //     anchors.left: middlePanel.left
-            //     anchors.top: middlePanel.top
-            //     anchors.leftMargin: 14
-            //     anchors.topMargin: 78
-            //     font.family: "Inter"
-            //     color: chatPage.currentTheme.dmText
-            //     font.pixelSize: 14
-            //     // text: "Direct Messages"
-            //     text: chatPageContent.openedChatType === "dm" ? "Direct Messages" : "Server"
-            // }
             Components.ChatListArea {
                 id: chatListArea
                 anchors.fill: parent

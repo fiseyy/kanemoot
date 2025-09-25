@@ -5,8 +5,13 @@ import QtQuick.Layouts 1.15
 Item {
     id: chatArea
     objectName: "chatArea"
-    // property string mode: "none" // "dm" / "server" / "none"
+
     property var serverData: null
+    property var currentChannel: null
+    property int currentChannelId: -1
+    property int currentServerId: -1
+
+
     onServerDataChanged: {
         console.log("[ChatArea] Выбран сервер:", serverData ? serverData.name : "null")
     }
@@ -45,7 +50,7 @@ Item {
 
     Rectangle {
         id: sendRectangle
-        visible: chatArea.chatType !== "none"
+        visible: chatArea.chatType === "dm" || (chatArea.currentChannelId !== -1 && chatArea.currentChannel.type === "text")
         anchors.right: parent.right
         anchors.left: parent.left
         anchors.leftMargin: 6
@@ -137,7 +142,12 @@ Item {
             MouseArea {
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
-                onClicked: console.log("Send button clicked")
+                onClicked:
+                {
+                    console.log("Отправляем сообщение в канал", chatArea.currentChannelId,
+                                        "сервера", chatArea.currentServerId,
+                                        "текст:", messageField.text)
+                }
                 hoverEnabled: true
                 onPressed: parent.opacity = 0.5
                 onReleased: parent.opacity = 1

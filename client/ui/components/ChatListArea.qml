@@ -25,7 +25,6 @@ Item {
         anchors.right: parent.right
         anchors.margins: 8
 
-        // Имя сервера крупным шрифтом
         Text {
             text: serverData ? serverData.name : "Server"
             font.bold: true
@@ -33,7 +32,6 @@ Item {
             color: chatPage.currentTheme.defaultPrimaryTextColor
         }
 
-        // Заголовок для каналов с отступом слева
         Text {
             text: "Channels"
             font.bold: true
@@ -42,7 +40,6 @@ Item {
             anchors.leftMargin: 5
         }
 
-        // Список каналов
         Repeater {
             model: serverData ? serverData.channels : []
             delegate: Rectangle {
@@ -62,6 +59,11 @@ Item {
                     onExited: channelRect.color = "transparent"
                     onClicked: {
                         console.log("Канал выбран:", modelData.name, "Тип:", modelData.type)
+                        chatArea.currentChannelId = modelData.id
+                        chatArea.currentServerId = serverData.id
+                        chatArea.chatType = "server"
+                        chatArea.currentChannel = modelData
+                        chatArea.serverData = serverData
                     }
                 }
 
