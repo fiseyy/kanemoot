@@ -8,7 +8,7 @@ Item {
     id: chatPageContent
     objectName: "chatPageContent"
     anchors.fill: parent
-    property string openedChatType: "dm" // "server" / "dm"
+    property string openedChatType: "none" // "server" / "dm"
 
     property bool micMuted: false
     property bool headsetMuted: false
@@ -198,18 +198,25 @@ Item {
             }
 
 
-            Text {
-                id: dmText
-                anchors.left: middlePanel.left
-                anchors.top: middlePanel.top
-                anchors.leftMargin: 14
-                anchors.topMargin: 78
-                font.family: "Inter"
-                color: chatPage.currentTheme.dmText
-                font.pixelSize: 14
-                // text: "Direct Messages"
-                text: chatPageContent.openedChatType === "dm" ? "Direct Messages" : "Server"
+            // Text {
+            //     id: dmText
+            //     anchors.left: middlePanel.left
+            //     anchors.top: middlePanel.top
+            //     anchors.leftMargin: 14
+            //     anchors.topMargin: 78
+            //     font.family: "Inter"
+            //     color: chatPage.currentTheme.dmText
+            //     font.pixelSize: 14
+            //     // text: "Direct Messages"
+            //     text: chatPageContent.openedChatType === "dm" ? "Direct Messages" : "Server"
+            // }
+            Components.ChatListArea {
+                id: chatListArea
+                anchors.fill: parent
+                chatType: chatPageContent.openedChatType
+                serverData: chatArea.serverData
             }
+
 
             // DMS
 
@@ -410,6 +417,11 @@ Item {
             anchors.left: middlePanel.right
             anchors.right: parent.right
             color: chatPage.currentTheme.rightPanel
+            Components.ChatArea {
+                id: chatArea
+                anchors.fill: parent
+                chatType: chatPageContent.openedChatType
+            }
             Rectangle {
                 id: chatInfoRectangle // будь то инфо о человеке, или открытом канале сервера
                 anchors.top: parent.top
@@ -418,108 +430,7 @@ Item {
                 height: 72
                 color: chatPage.currentTheme.chatInfoRectangle
             }
-            Rectangle {
-                id: sendRectangle
-                anchors.right: parent.right
-                anchors.left: parent.left
-                anchors.leftMargin: 6
-                anchors.rightMargin: 14
-                anchors.bottom: parent.bottom
-                anchors.bottomMargin: 18
-                color: chatPage.currentTheme.sendRectangle
-                border.color: chatPage.currentTheme.sendRectangleBorder
-                border.width: 1
-                radius: 15
-                height: 40
 
-                TextField {
-                    id: messageField
-                    anchors.top: parent.top
-                    anchors.bottom: parent.bottom
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    anchors.leftMargin: 11
-                    anchors.rightMargin: 100  // место под кнопки справа
-                    placeholderText: "Send a message..."
-                    font.family: "Inter"
-                    font.pixelSize: 14
-                    color: chatPage.currentTheme.sendText
-                    placeholderTextColor: chatPage.currentTheme.sendDefaultText
-                    background: null
-                }
-
-                Image {
-                    id: emojiBtn
-                    anchors.top: parent.top
-                    anchors.right: parent.right
-                    anchors.topMargin: 8
-                    anchors.rightMargin: 78
-                    width: 24
-                    height: 24
-                    source: chatPage.currentTheme.emojiIcon
-                    fillMode: Image.PreserveAspectFit
-                    smooth: true
-
-                    MouseArea {
-                        anchors.fill: parent
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: console.log("Emoji button clicked")
-                        hoverEnabled: true
-                        onPressed: parent.opacity = 0.5
-                        onReleased: parent.opacity = 1
-                        onEntered:  parent.opacity = 0.7
-                        onExited: parent.opacity = 1
-                    }
-                }
-
-                Image {
-                    id: addFileBtn
-                    anchors.top: parent.top
-                    anchors.right: parent.right
-                    anchors.topMargin: 8
-                    anchors.rightMargin: 43
-                    width: 24
-                    height: 24
-                    source: chatPage.currentTheme.fileIcon
-                    fillMode: Image.PreserveAspectFit
-                    smooth: true
-
-                    MouseArea {
-                        anchors.fill: parent
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: console.log("Add file button clicked")
-                        hoverEnabled: true
-                        onPressed: parent.opacity = 0.5
-                        onReleased: parent.opacity = 1
-                        onEntered:  parent.opacity = 0.7
-                        onExited: parent.opacity = 1
-                    }
-                }
-
-                Image {
-                    id: sendBtn
-                    anchors.top: parent.top
-                    anchors.right: parent.right
-                    anchors.topMargin: 8
-                    anchors.rightMargin: 8
-                    width: 24
-                    height: 24
-                    source: chatPage.currentTheme.sendIcon
-                    fillMode: Image.PreserveAspectFit
-                    smooth: true
-
-                    MouseArea {
-                        anchors.fill: parent
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: console.log("Send button clicked")
-                        hoverEnabled: true
-                        onPressed: parent.opacity = 0.5
-                        onReleased: parent.opacity = 1
-                        onEntered:  parent.opacity = 0.7
-                        onExited: parent.opacity = 1
-                    }
-                }
-            }
         }
     }
     Components.SettingsOverlay {

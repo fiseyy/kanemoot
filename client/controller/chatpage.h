@@ -22,6 +22,7 @@ public slots:
     Q_INVOKABLE void createServer(const QString &name);
 
     void logoutRedirect();
+    void onServerSelected(const QVariant &serverDataVar);
 private:
     void fail(const QString& error);
 

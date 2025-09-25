@@ -66,4 +66,13 @@ QtObject {
     property color popupButtonHover: Qt.rgba(1,1,1,0.05)       // лёгкое подсвечивание
     property color popupButtonText: "#FFFFFF"                   // текст кнопок
     property color popupLogoutButton: "#FF4C4C"                // красная кнопка выхода
+
+    property string textChannelImg: "qrc:///assets/dark/text-channel.png"
+    property string voiceChannelImg: "qrc:///assets/dark/voice-channel.png"
+
+    property color channelHoverBg: "#1A1A1A"
+
+    property color defaultPrimaryTextColor: "#FFFFFF"
+    property color defaultSecondaryTextColor: "gray"
+    property color channelTextColor: "lightgray"
 }

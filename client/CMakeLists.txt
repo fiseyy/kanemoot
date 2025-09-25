@@ -73,6 +73,9 @@ qt_add_qml_module(appkanemoot
     QML_FILES ui/components/AddServerPopup.qml
     QML_FILES ui/components/EditPopup.qml
     QML_FILES ui/components/ServerItem.qml
+    QML_FILES ui/components/ChatArea.qml
+    QML_FILES ui/components/ChatListArea.qml
+    SOURCES core/serverdata.h
 
 )
 

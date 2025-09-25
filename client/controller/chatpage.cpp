@@ -4,9 +4,11 @@
 #include "core/securestorage.h"
 #include "core/errorhandler.h"
 #include "core/settingsmanager.h"
+#include "core/serverdata.h"
 #include <QQmlComponent>
 #include <qqmlcontext.h>
 #include <QJsonArray>
+#include <QQmlContext>
 #include <QJsonObject>
 #include <QQuickItem>
 ChatPage::ChatPage(QObject *parent) {
@@ -32,9 +34,7 @@ ChatPage::ChatPage(QObject *parent) {
         QObject* userServersColumn = chatPageContent->findChild<QObject*>("userServersColumn");
         if(!userServersColumn) return;
 
-
         QQuickItem* columnItem = qobject_cast<QQuickItem*>(userServersColumn);
-        qDebug() << "[ChatPage] очищаем userServersColumn перед добавлением, детей:" << columnItem->childItems().size();
         if (columnItem) {
             const auto items = columnItem->childItems();
             for (QQuickItem* item : items) {
@@ -43,15 +43,40 @@ ChatPage::ChatPage(QObject *parent) {
             }
         }
 
-
         QQmlEngine* engine = QQmlEngine::contextForObject(root)->engine();
 
         for(const auto &s_val : servers){
             QJsonObject s = s_val.toObject();
 
-            QQmlContext* context = new QQmlContext(engine->rootContext());
-            context->setContextProperty("serverData", s);
-            context->setContextProperty("chatPage", getRootObject());
+            QVariantList channels;
+            for (const auto &ch_val : s.value("channels").toArray()) {
+                QJsonObject chObj = ch_val.toObject();
+                QVariantMap chMap;
+                chMap["id"] = chObj.value("id").toInt();
+                chMap["name"] = chObj.value("name").toString();
+                chMap["type"] = chObj.value("type").toString();
+                channels.append(chMap);
+            }
+
+            QList<QObject*> channelsList;
+            for (const auto &ch_val : s.value("channels").toArray()) {
+                QJsonObject chObj = ch_val.toObject();
+                channelsList.append(new ChannelData(
+                    chObj.value("id").toInt(),
+                    chObj.value("name").toString(),
+                    chObj.value("type").toString(),
+                    this
+                    ));
+            }
+
+            ServerData* server = new ServerData(
+                s.value("id").toInt(),
+                s.value("name").toString(),
+                s.value("avatar_url").toString(),
+                s.value("role").toString(),
+                channelsList,
+                this
+                );
 
             QQmlComponent comp(engine, QUrl("qrc:///kanemoot/ui/components/ServerItem.qml"));
             if (comp.status() != QQmlComponent::Ready) {
@@ -59,26 +84,26 @@ ChatPage::ChatPage(QObject *parent) {
                 continue;
             }
 
+            QQmlContext* context = new QQmlContext(engine->rootContext());
+            context->setContextProperty("chatPage", root);
+
             QObject* serverItemObj = comp.create(context);
             if (!serverItemObj) {
-                qWarning() << "Не удалось создать серверный компонент:" << comp.errorString();
+                qWarning() << "Не удалось создать ServerItem:" << comp.errorString();
                 continue;
             }
 
+            QQuickItem* serverItem = qobject_cast<QQuickItem*>(serverItemObj);
+            if (serverItem && columnItem) {
+                serverItem->setParentItem(columnItem);
+                serverItem->setProperty("serverData", QVariant::fromValue<QObject*>(server));
+                serverItem->setObjectName(QString("server_%1").arg(s["id"].toInt()));
 
-            if (serverItemObj) {
-                QQuickItem* serverItem = qobject_cast<QQuickItem*>(serverItemObj);
-                QQuickItem* columnItem = qobject_cast<QQuickItem*>(userServersColumn);
-                if (serverItem && columnItem) {
-                    serverItem->setParentItem(columnItem);
-                    serverItem->setObjectName(QString("server_%1").arg(s["id"].toInt()));
-                }
-            } else {
-                qWarning() << "Не удалось создать серверный компонент";
+                QObject::connect(serverItemObj, SIGNAL(serverClicked(QVariant)),
+                                 this, SLOT(onServerSelected(QVariant)));
             }
         }
     });
-
 
 
     connect(m_chatmgr, &ChatManager::connected, [this]() {
@@ -105,6 +130,31 @@ ChatPage::ChatPage(QObject *parent) {
         if (!m_reconnectTimer->isActive()) m_reconnectTimer->start();
     });
 }
+
+void ChatPage::onServerSelected(const QVariant &serverDataVar) {
+    ServerData* server = qobject_cast<ServerData*>(serverDataVar.value<QObject*>());
+    if (!server) return;
+
+    qDebug() << "Сервер выбран:" << server->name();
+
+    QObject* root = getRootObject();
+    if (!root) return;
+
+    QObject* chatPageContent = root->findChild<QObject*>("chatPageContent");
+    if (!chatPageContent) return;
+
+    chatPageContent->setProperty("openedChatType", "server");
+    chatPageContent->setProperty("serverData", QVariant::fromValue<QObject*>(server));
+
+    QObject* chatAreaObj = root->findChild<QObject*>("chatArea");
+    if (chatAreaObj) {
+        chatAreaObj->setProperty("serverData", QVariant::fromValue<QObject*>(server));
+        chatAreaObj->setProperty("chatType", "server");
+    }
+}
+
+
+
 
 void ChatPage::init()
 {
