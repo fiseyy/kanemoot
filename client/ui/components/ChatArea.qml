@@ -50,7 +50,9 @@ Item {
 
     Rectangle {
         id: sendRectangle
-        visible: chatArea.chatType === "dm" || (chatArea.currentChannelId !== -1 && chatArea.currentChannel.type === "text")
+        visible: chatArea.chatType === "dm" ||
+                 (chatArea.currentChannelId !== -1 && chatArea.currentChannel && chatArea.currentChannel.type === "text")
+
         anchors.right: parent.right
         anchors.left: parent.left
         anchors.leftMargin: 6

@@ -8,6 +8,13 @@ Item {
     onServerDataChanged: {
         console.log("[ChatListArea] Выбран сервер:", serverData ? serverData.name : "null")
     }
+    property color accentColorTransparent: Qt.rgba(
+        Qt.darker(chatPage.accentColor, 0.7).r,
+        Qt.darker(chatPage.accentColor, 0.7).g,
+        Qt.darker(chatPage.accentColor, 0.7).b,
+        0.3
+    )
+
     anchors.topMargin: 72
     anchors.leftMargin: 4
 
@@ -47,23 +54,30 @@ Item {
                 width: parent.width
                 height: 28
                 radius: 8
-                color: "transparent"
                 anchors.horizontalCenter: parent.horizontalCenter
 
-                // hover
+                property bool hovered: false
+
+                color: hovered
+                       ? chatPage.currentTheme.channelHoverBg
+                       : (chatArea.currentChannelId === modelData.id
+                          ? Qt.rgba(Qt.darker(chatPage.accentColor, 0.7).r,
+                                    Qt.darker(chatPage.accentColor, 0.7).g,
+                                    Qt.darker(chatPage.accentColor, 0.7).b,
+                                    0.3)
+                          : "transparent")
+
                 MouseArea {
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
-                    onEntered: channelRect.color = chatPage.currentTheme.channelHoverBg
-                    onExited: channelRect.color = "transparent"
+                    onEntered: channelRect.hovered = true
+                    onExited: channelRect.hovered = false
                     onClicked: {
-                        console.log("Канал выбран:", modelData.name, "Тип:", modelData.type)
                         chatArea.currentChannelId = modelData.id
                         chatArea.currentServerId = serverData.id
                         chatArea.chatType = "server"
                         chatArea.currentChannel = modelData
-                        chatArea.serverData = serverData
                     }
                 }
 
@@ -99,4 +113,5 @@ Item {
         anchors.centerIn: parent
         color: "gray"
     }
+
 }
