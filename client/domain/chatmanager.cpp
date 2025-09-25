@@ -168,3 +168,41 @@ void ChatManager::createServer(const QString &name) {
     QJsonDocument doc(obj);
     sendMessage(QString::fromUtf8(doc.toJson(QJsonDocument::Compact)));
 }
+
+void ChatManager::createChannel(int serverId, const QString &name, const QString &type) {
+    QJsonObject obj;
+    obj["action"] = "create_channel";
+    obj["server_id"] = serverId;
+    obj["channel_name"] = name;
+    obj["channel_type"] = type;
+
+    auto jwt_opt = SecureStorage::instance().getValue("jwt-token");
+    if (jwt_opt.has_value()) {
+        obj["jwt"] = jwt_opt.value();
+    } else {
+        Logging::instance().log(Logging::Warning, "JWT отсутствует, create_channel не отправлен");
+        return;
+    }
+
+    QJsonDocument doc(obj);
+    sendMessage(QString::fromUtf8(doc.toJson(QJsonDocument::Compact)));
+}
+
+void ChatManager::deleteChannel(int channelId, int serverId) {
+    QJsonObject obj;
+    obj["action"] = "delete_channel";
+    obj["channel_id"] = channelId;
+    obj["server_id"] = serverId;
+
+    auto jwt_opt = SecureStorage::instance().getValue("jwt-token");
+    if (jwt_opt.has_value()) {
+        obj["jwt"] = jwt_opt.value();
+    } else {
+        Logging::instance().log(Logging::Warning, "JWT отсутствует, delete_channel не отправлен");
+        return;
+    }
+
+    QJsonDocument doc(obj);
+    sendMessage(QString::fromUtf8(doc.toJson(QJsonDocument::Compact)));
+}
+

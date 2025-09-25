@@ -18,6 +18,9 @@ public:
     void joinServer(const QString &inviteLink);
     void createServer(const QString &name);
 
+    void createChannel(int serverId, const QString &name, const QString &type);
+    void deleteChannel(int channelId, int serverId);
+
 signals:
     void connected();
     void disconnected();
