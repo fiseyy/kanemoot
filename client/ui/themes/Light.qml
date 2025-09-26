@@ -75,4 +75,6 @@ QtObject {
     property color defaultPrimaryTextColor: "black"
     property color defaultSecondaryTextColor: "#666"
     property color channelTextColor: "#333"
+
+    property string chevronDown: "qrc:///assets/light/arrow-down.png"
 }
