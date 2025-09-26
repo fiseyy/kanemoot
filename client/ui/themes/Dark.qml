@@ -77,4 +77,5 @@ QtObject {
     property color channelTextColor: "lightgray"
 
     property string chevronDown: "qrc:///assets/dark/arrow-down.png"
+    property string closeIcon: "qrc:///assets/dark/close.png"
 }

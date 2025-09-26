@@ -43,5 +43,7 @@
         <file>assets/light/voice-channel.png</file>
         <file>assets/dark/arrow-down.png</file>
         <file>assets/light/arrow-down.png</file>
+        <file>assets/dark/close.png</file>
+        <file>assets/light/close.png</file>
     </qresource>
 </RCC>

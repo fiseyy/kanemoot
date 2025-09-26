@@ -4,8 +4,19 @@ import QtQuick.Layouts 1.15
 
 Item {
     id: chatListArea
+
+    property var serverOptionsModel: [
+        qsTr("Server settings"),
+        qsTr("Invite people"),
+        qsTr("Create channel"),
+        qsTr("Notification settings"),
+        qsTr("Leave server")
+    ]
+
     property string chatType: "none"
     property var serverData
+
+    property bool serverPopupSelected: false
     onServerDataChanged: {
         console.log("[ChatListArea] Выбран сервер:", serverData ? serverData.name : "null")
     }
@@ -38,7 +49,9 @@ Item {
             width: parent.width
             height: 32
             radius: 6
-            color: hovered ? chatPage.currentTheme.channelHoverBg : "transparent"
+            color: (hovered || serverPopupSelected)
+                   ? chatPage.currentTheme.channelHoverBg
+                   : "transparent"
 
             property bool hovered: false
 
@@ -60,12 +73,15 @@ Item {
                 }
 
                 Image {
-                    source: chatPage.currentTheme.chevronDown
                     width: 20
                     height: 20
                     fillMode: Image.PreserveAspectFit
                     Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
+                    source: serverPopupSelected
+                            ? chatPage.currentTheme.closeIcon
+                            : chatPage.currentTheme.chevronDown
                 }
+
             }
 
             MouseArea {
@@ -74,60 +90,74 @@ Item {
                 cursorShape: Qt.PointingHandCursor
                 onEntered: serverHeader.hovered = true
                 onExited: serverHeader.hovered = false
-                onClicked: serverOptionsPopup.open()
+                onClicked: {
+                    chatListArea.serverPopupSelected = true
+                    serverOptionsPopup.open()
+                }
             }
 
             Popup {
-                id: serverOptionsPopup
-                x: serverHeader.x
-                y: serverHeader.y + serverHeader.height + 4
-                modal: false
-                focus: true
-                background: Rectangle {
-                    color: chatPage.currentTheme.addServerBtnBg
-                    border.color: chatPage.currentTheme.addServerBtnBorder
-                    radius: 6
-                }
+                    id: serverOptionsPopup
+                    x: (chatListArea.width - width) / 2
+                    y: serverHeader.y + serverHeader.height + 4
+                    modal: true
+                    focus: true
+                    closePolicy: Popup.CloseOnPressOutside | Popup.CloseOnEscape
+                    dim: false
 
-                Column {
-                    spacing: 2
-                    padding: 4
+                    // --- анимация появления ---
+                    enter: Transition {
+                        NumberAnimation { property: "opacity"; from: 0; to: 1; duration: 140; easing.type: Easing.OutCubic }
+                        ScaleAnimator { from: 0.9; to: 1.0; duration: 140; easing.type: Easing.OutCubic }
+                    }
+                    exit: Transition {
+                        NumberAnimation { property: "opacity"; from: 1; to: 0; duration: 100; easing.type: Easing.InCubic }
+                        ScaleAnimator { from: 1.0; to: 0.95; duration: 100; easing.type: Easing.InCubic }
+                    }
+                    onClosed: {
+                        chatListArea.serverPopupSelected = false
+                    }
+                    background: Rectangle {
+                        color: chatPage.currentTheme.addServerBtnBg
+                        border.color: chatPage.currentTheme.addServerBtnBorder
+                        radius: 6
+                    }
 
-                    Repeater {
-                        model: [ "Настройки сервера",
-                                 "Пригласить людей",
-                                 "Создать канал",
-                                 "Параметры уведомлений",
-                                 "Покинуть сервер" ]
+                    Column {
+                        spacing: 2
+                        padding: 4
 
-                        delegate: Rectangle {
-                            width: 160
-                            height: 28
-                            radius: 4
-                            color: "transparent"
+                        Repeater {
+                            model: chatListArea.serverOptionsModel
 
-                            Text {
-                                anchors.centerIn: parent
-                                text: modelData
-                                color: chatPage.currentTheme.defaultPrimaryTextColor
-                                font.pixelSize: 14
-                            }
+                            delegate: Rectangle {
+                                width: 180
+                                height: 28
+                                radius: 4
+                                color: "transparent"
 
-                            MouseArea {
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: {
-                                    console.log(modelData, "clicked for server", serverData ? serverData.name : "")
-                                    serverOptionsPopup.close()
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: modelData
+                                    color: chatPage.currentTheme.defaultPrimaryTextColor
+                                    font.pixelSize: 14
                                 }
-                                onEntered: parent.color = chatPage.currentTheme.channelHoverBg
-                                onExited: parent.color = "transparent"
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: {
+                                        console.log(modelData, "clicked for server", serverData ? serverData.name : "")
+                                        serverOptionsPopup.close()
+                                    }
+                                    onEntered: parent.color = chatPage.currentTheme.channelHoverBg
+                                    onExited: parent.color = "transparent"
+                                }
                             }
                         }
                     }
                 }
-            }
         }
 
 
