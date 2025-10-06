@@ -44,6 +44,7 @@ async def auth(request, action, login="", password="", email="", token=""):
             data["success"] = True
             data["jwt"] = new_jwt
             data["access_token"] = access_token_obj.token
+            data["user_id"] = user.id
         else:
             data["error"] = "Неправильный логин и/или пароль"
         db.close()
