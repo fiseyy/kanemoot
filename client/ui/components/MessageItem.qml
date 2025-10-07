@@ -51,14 +51,12 @@ Item {
             }
         }
 
-        // Ряд с пузырём и аватарками.
         Item {
             id: bubbleRow
             width: parent.width
-            // учитываем либо высоту пузыря, либо аватара, чтобы не накладывались
+
             height: Math.max(bubble.implicitHeight, avatarSize)
 
-            // левый аватар (для чужих)
             Rectangle {
                 id: avatarLeft
                 visible: !isOwnMessage
@@ -69,7 +67,6 @@ Item {
                 Image { anchors.fill: parent; source: currentTheme ? currentTheme.defaultAvatar : ""; fillMode: Image.PreserveAspectCrop }
             }
 
-            // правый аватар (для своих)
             Rectangle {
                 id: avatarRight
                 visible: isOwnMessage
@@ -80,23 +77,19 @@ Item {
                 Image { anchors.fill: parent; source: currentTheme ? currentTheme.defaultAvatar : ""; fillMode: Image.PreserveAspectCrop }
             }
 
-            // Пузырь сообщения
             Rectangle {
                 id: bubble
                 anchors.verticalCenter: parent.verticalCenter
 
-                // привязка влево/вправо
                 anchors.left: isOwnMessage ? undefined : parent.left
                 anchors.right: isOwnMessage ? parent.right : undefined
 
-                // резервируем место под аватарки через margins
                 anchors.leftMargin: !isOwnMessage ? avatarSize + 10 : 10
                 anchors.rightMargin: isOwnMessage ? avatarSize + 10 : 10
 
                 color: isOwnMessage ? (currentTheme?.accent ?? "#3a86ff") : (currentTheme?.surfaceVariant ?? "#e5e5e5")
                 radius: 10
 
-                // ширина = текст + паддинги, но не больше 72% родителя
                 width: Math.min(messageTextItem.implicitWidth + hPadding*2, root.width * 0.72)
                 height: messageTextItem.implicitHeight + 12
 
@@ -105,6 +98,7 @@ Item {
                     text: messageText
                     anchors.fill: parent
                     anchors.margins: hPadding
+                    anchors.topMargin: 6
                     wrapMode: Text.Wrap
                     font.pixelSize: 14
                     color: isOwnMessage ? "white" : "black"
