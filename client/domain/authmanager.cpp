@@ -105,6 +105,7 @@ void AuthManager::onConnected()
 
 void AuthManager::onMessageReceived(const QString &text)
 {
+    qDebug() << text;
     QJsonDocument doc = QJsonDocument::fromJson(text.toUtf8());
     if (!doc.isObject()) {
         emit authFailed("Неверный формат ответа сервера");
@@ -122,7 +123,7 @@ void AuthManager::onMessageReceived(const QString &text)
 
     QString jwt_token = obj.value("jwt").toString();
     QString access_token = obj.value("access_token").toString();
-
+    int userId = obj.value("user_id").toInt(-1);
 
     if (success) {
         if (!jwt_token.isEmpty()) {
@@ -137,6 +138,10 @@ void AuthManager::onMessageReceived(const QString &text)
         if (!username.isEmpty()) {
             SecureStorage::instance().setValue("username", username);
             Logging::instance().log(Logging::Debug, "Имя пользователя записано.");
+        }
+        if (userId != -1) {
+            SecureStorage::instance().setValue("user_id", QString::number(userId));
+            Logging::instance().log(Logging::Debug, "ID пользователя записан.");
         }
         emit authSucceeded();
     } else {

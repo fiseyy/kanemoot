@@ -45,5 +45,7 @@
         <file>assets/light/arrow-down.png</file>
         <file>assets/dark/close.png</file>
         <file>assets/light/close.png</file>
+        <file>assets/dark/default-user.svg</file>
+        <file>assets/light/default-user.svg</file>
     </qresource>
 </RCC>

@@ -5,6 +5,9 @@ import QtQuick.Layouts 1.15
 Item {
     id: chatListArea
 
+    objectName: "chatListArea"
+    signal clearMessagesRequested()
+
     property var serverOptionsModel: [
         qsTr("Server settings"),
         qsTr("Invite people"),
@@ -200,7 +203,14 @@ Item {
                         chatArea.currentServerId = serverData.id
                         chatArea.chatType = "server"
                         chatArea.currentChannel = modelData
+                        console.log(chatPage ? "CHATPAGE ЕСТЬ" : "CHATPAGE НЕТ")
+                        if (chatMgr) {
+                            clearMessagesRequested()
+                            chatMgr.getMessages(modelData.id)
+                            console.log("Запрос сообщений отправлен для канала", modelData.id)
+                        }
                     }
+
                 }
 
                 Row {

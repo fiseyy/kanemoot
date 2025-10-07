@@ -107,9 +107,28 @@ void ChatManager::onMessageReceived(const QString &text)
         QJsonArray servers = obj["servers"].toArray();
         emit userServersReceived(servers);
     }
-    // else if (action == "") {
+    else if (action == "new_message") {
+        QJsonObject messageObj = obj["message"].toObject();
 
-    // }
+        QVariantMap msgMap;
+        for (auto it = messageObj.begin(); it != messageObj.end(); ++it) {
+            msgMap[it.key()] = it.value().toVariant();
+        }
+
+        emit newMessageReceived(msgMap);
+    }
+    else if (action == "messages") {
+        QJsonArray messagesArray = obj["messages"].toArray();
+
+        for (const QJsonValue &m_val : messagesArray) {
+            QJsonObject mObj = m_val.toObject();
+            QVariantMap msgMap;
+            for (auto it = mObj.begin(); it != mObj.end(); ++it) {
+                msgMap[it.key()] = it.value().toVariant();
+            }
+            emit newMessageReceived(msgMap);
+        }
+    }
 
 }
 
@@ -206,3 +225,40 @@ void ChatManager::deleteChannel(int channelId, int serverId) {
     sendMessage(QString::fromUtf8(doc.toJson(QJsonDocument::Compact)));
 }
 
+void ChatManager::getMessages(int channelId) {
+    QJsonObject obj;
+    obj["action"] = "get_messages";
+    obj["channel_id"] = channelId;
+
+    auto jwt_opt = SecureStorage::instance().getValue("jwt-token");
+    if (jwt_opt.has_value()) {
+        obj["jwt"] = jwt_opt.value();
+    } else {
+        Logging::instance().log(Logging::Warning, "JWT отсутствует, get_messages не отправлен");
+        return;
+    }
+
+    QJsonDocument doc(obj);
+    sendMessage(QString::fromUtf8(doc.toJson(QJsonDocument::Compact)));
+}
+
+void ChatManager::sendChatMessage(int guildId, int channelId, const QString &text) {
+    if (text.trimmed().isEmpty()) return;
+
+    QJsonObject obj;
+    obj["action"] = "send_message";
+    obj["guild_id"] = guildId;       // добавили
+    obj["channel_id"] = channelId;   // уже был
+    obj["content"] = text;
+
+    auto jwt_opt = SecureStorage::instance().getValue("jwt-token");
+    if (jwt_opt.has_value()) {
+        obj["jwt"] = jwt_opt.value();
+    } else {
+        Logging::instance().log(Logging::Warning, "JWT отсутствует, sendChatMessage не отправлен");
+        return;
+    }
+
+    QJsonDocument doc(obj);
+    sendMessage(QString::fromUtf8(doc.toJson(QJsonDocument::Compact)));
+}

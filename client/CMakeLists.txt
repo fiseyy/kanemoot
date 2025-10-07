@@ -76,6 +76,9 @@ qt_add_qml_module(appkanemoot
     QML_FILES ui/components/ChatArea.qml
     QML_FILES ui/components/ChatListArea.qml
     SOURCES core/serverdata.h
+    QML_FILES ui/components/MessageItem.qml
+    QML_FILES ui/components/DateSeparatorItem.qml
+    QML_FILES ui/components/ChatMessageList.qml
 
 )
 

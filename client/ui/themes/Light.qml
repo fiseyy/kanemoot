@@ -78,4 +78,11 @@ QtObject {
 
     property string chevronDown: "qrc:///assets/light/arrow-down.png"
     property string closeIcon: "qrc:///assets/light/close.png"
+
+    property string defaultAvatar: "qrc:///assets/light/default-user.svg"
+
+    property color usernameColor: "#444444"
+    property color timestampColor: "#555555"
+    property color messageBackground: "#ccc"
+    property color messageTextColor: "#000000"
 }

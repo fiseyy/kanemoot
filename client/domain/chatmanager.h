@@ -21,10 +21,14 @@ public:
     void createChannel(int serverId, const QString &name, const QString &type);
     void deleteChannel(int channelId, int serverId);
 
+    Q_INVOKABLE void getMessages(int channelId);
+    Q_INVOKABLE void sendChatMessage(int guildId, int channelId, const QString &text);
+
 signals:
     void connected();
     void disconnected();
     void messageReceived(const QString &text);
+    void newMessageReceived(const QVariantMap &msg);
     void errorOccurred(const QString &error);
     void userServersReceived(const QJsonArray &servers);
 

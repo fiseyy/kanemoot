@@ -22,6 +22,29 @@ ChatPage::ChatPage(QObject *parent) {
             m_chatmgr->connectToChat();
         }
     });
+    connect(m_chatmgr, &ChatManager::newMessageReceived, this, [this](const QVariantMap &msg){
+        if (!chatList) {
+            qWarning() << "ChatList не объявлен!";
+            return;
+        }
+
+        QVariantMap normalized;
+        normalized["id"] = msg.value("id");
+        normalized["user_id"] = msg.value("user_id");
+        normalized["text"] = msg.value("content");
+        normalized["timestamp"] = msg.value("timestamp");
+        normalized["username"] = msg.value("username");
+
+        std::optional<QString> maybeId = SecureStorage::instance().getValue("user_id");
+        long long myUserId = maybeId ? maybeId->toLongLong() : -1;
+
+        normalized["isOwn"] = (msg.value("user_id").toLongLong() == myUserId);
+        qDebug() << "new message normalized:" << normalized;
+
+        QMetaObject::invokeMethod(chatList, "addMessage",
+                                  Q_ARG(QVariant, QVariant::fromValue(normalized)));
+    });
+
     connect(m_chatmgr, &ChatManager::userServersReceived, this, [this](const QJsonArray &servers){
         qDebug() << "[ChatPage] userServersReceived, серверов пришло:" << servers.size();
 
@@ -164,6 +187,21 @@ void ChatPage::init()
         return;
     }
 
+    QObject* chatListObj = root->findChild<QObject*>("chatList");
+    if (chatListObj)
+        chatList = qobject_cast<QQuickItem*>(chatListObj);
+    else
+        qWarning() << "chatList не найден в QML!";
+
+    QObject* chatListAreaObj = root->findChild<QObject*>("chatListArea");
+    if (chatListAreaObj) {
+        chatListArea = qobject_cast<QQuickItem*>(chatListAreaObj);
+        connect(chatListAreaObj, SIGNAL(clearMessagesRequested()),
+                this, SLOT(clearMessages()));
+    }
+    else
+        qWarning() << "chatListArea не найден в QML!";
+
     QObject* editPopup = root->findChild<QObject*>("editPopup");
     if(editPopup) {
         connect(editPopup, SIGNAL(logoutRequested()),
@@ -181,6 +219,10 @@ void ChatPage::init()
         qWarning() << "addServerOverlay не найден";
     }
 
+    QQmlEngine* engine = QQmlEngine::contextForObject(root)->engine();
+    QQmlContext* context = engine->rootContext();
+    context->setContextProperty("chatPage", this);
+    context->setContextProperty("chatMgr", m_chatmgr);
 
     QObject* loadingPage = root->findChild<QObject*>("loadingPage");
 
@@ -261,6 +303,17 @@ void ChatPage::createServer(const QString &name) {
     if (m_chatmgr)
         m_chatmgr->createServer(name);
 }
+
+void ChatPage::clearMessages()
+{
+    if (!chatList) {
+        qWarning() << "chatList не инициализирован!";
+        return;
+    }
+
+    QMetaObject::invokeMethod(chatList, "clearMessages");
+}
+
 
 void ChatPage::logoutRedirect()
 {

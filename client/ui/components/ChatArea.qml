@@ -1,6 +1,7 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
+import "../components" as Components
 
 Item {
     id: chatArea
@@ -38,14 +39,15 @@ Item {
 
     }
 
-    ListView {
+    Components.ChatMessageList {
         id: messageList
+        objectName: "chatList"
         anchors.top: chatInfoRectangle.bottom
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: sendRectangle.top
         visible: chatArea.chatType !== "none"
-        model: []
+        currentTheme: chatPage.currentTheme
     }
 
     Rectangle {
@@ -144,12 +146,18 @@ Item {
             MouseArea {
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
-                onClicked:
-                {
-                    console.log("Отправляем сообщение в канал", chatArea.currentChannelId,
-                                        "сервера", chatArea.currentServerId,
-                                        "текст:", messageField.text)
-                }
+                onClicked: {
+                            if (messageField.text.trim() !== "") {
+                                chatMgr.sendChatMessage(chatArea.currentServerId, chatArea.currentChannelId, messageField.text)
+                                messageList.addMessage({
+                                            username: chatPage.username || "You",
+                                            text: messageField.text,
+                                            timestamp: new Date().toLocaleTimeString(),
+                                            isOwn: true
+                                        })
+                                messageField.text = ""
+                            }
+                        }
                 hoverEnabled: true
                 onPressed: parent.opacity = 0.5
                 onReleased: parent.opacity = 1
