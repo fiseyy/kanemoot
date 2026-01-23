@@ -87,7 +87,7 @@ Item {
                 anchors.leftMargin: !isOwnMessage ? avatarSize + 10 : 10
                 anchors.rightMargin: isOwnMessage ? avatarSize + 10 : 10
 
-                color: isOwnMessage ? (currentTheme?.accent ?? "#3a86ff") : (currentTheme?.surfaceVariant ?? "#e5e5e5")
+                color: isOwnMessage ? (chatPage ? chatPage.accentColor : "#3a86ff") : (currentTheme?.messageBackground ?? "#e5e5e5")
                 radius: 10
 
                 width: Math.min(messageTextItem.implicitWidth + hPadding*2, root.width * 0.72)
@@ -101,7 +101,8 @@ Item {
                     anchors.topMargin: 6
                     wrapMode: Text.Wrap
                     font.pixelSize: 14
-                    color: isOwnMessage ? "white" : "black"
+                    // color: isOwnMessage ? "white" : "black"
+                    color: currentTheme ? currentTheme.messageTextColor : (isOwnMessage ? "white" : "black")
                 }
             }
         }

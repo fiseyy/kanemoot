@@ -16,69 +16,68 @@
  * Использует паттерн одиночка для обеспечения единственного экземпляра логгера.
  */
 class Logging : public QObject {
-  Q_OBJECT
+      Q_OBJECT
 
- public:
-  /**
-   * @enum LogLevel
-   * Уровни логирования, поддерживаемые в классе Logging.
-   */
-  enum LogLevel { Debug, Info, Warning, Critical, Fatal };
+     public:
+      /**
+       * @enum LogLevel
+       * Уровни логирования, поддерживаемые в классе Logging.
+       */
+      enum LogLevel { Debug, Info, Warning, Critical, Fatal };
 
-  /**
-   * @brief Возвращает единственный экземпляр логгера.
-   * @return Ссылка на экземпляр Logging.
-   */
-  static Logging& instance();
+      /**
+       * @brief Возвращает единственный экземпляр логгера.
+       * @return Ссылка на экземпляр Logging.
+       */
+      static Logging& instance();
 
-  /**
-   * @brief Логирует сообщение с указанным уровнем.
-   * @param level Уровень логирования.
-   * @param message Сообщение для логирования.
-   */
-  void log(LogLevel level, const QString& message);
+      /**
+       * @brief Логирует сообщение с указанным уровнем.
+       * @param level Уровень логирования.
+       * @param message Сообщение для логирования.
+       */
+      void log(LogLevel level, const QString& message);
 
-  void log(LogLevel level, uint32_t code, const QString &details = QString());
+      void log(LogLevel level, uint32_t code, const QString &details = QString());
 
-  /**
-   * @brief Устанавливает уровень логирования.
-   * @param level Новый уровень логирования.
-   */
-  void setLogLevel(LogLevel level);
-  /**
-   * @brief Выдает текущий уроверь логирования.
-   */
-  LogLevel getLogLevel();
+      /**
+       * @brief Устанавливает уровень логирования.
+       * @param level Новый уровень логирования.
+       */
+      void setLogLevel(LogLevel level);
+      /**
+       * @brief Выдает текущий уроверь логирования.
+       */
+      LogLevel getLogLevel();
 
-  /**
-   * @brief Конструктор.
-   * @param parent Родительский объект для QObject.
-   */
-  explicit Logging(QObject* parent = nullptr);
+      /**
+       * @brief Конструктор.
+       * @param parent Родительский объект для QObject.
+       */
+      explicit Logging(QObject* parent = nullptr);
 
-  /**
-   * @brief Деструктор.
-   * Закрывает файл логов.
-   */
-  ~Logging();
+      /**
+       * @brief Деструктор.
+       * Закрывает файл логов.
+       */
+      ~Logging();
 
- private:
-  QMap<int, QString> errorDictionary = {
-      {0x00101111, "Пользователь заблокирован"}
-  };
+    signals:
+        void errorOccured(LogLevel level, uint32_t code, QString message);
 
-  QFile logFile;          ///< Файл для хранения логов.
-  QTextStream outStream;  ///< Поток вывода для логов.
-  LogLevel currentLevel = Info;  ///< Текущий уровень логирования.
+     private:
+      QFile logFile;          ///< Файл для хранения логов.
+      QTextStream outStream;  ///< Поток вывода для логов.
+      LogLevel currentLevel = Info;  ///< Текущий уровень логирования.
+      void write(LogLevel level, const QString& message);
+      QMutex mutex;
 
-  QMutex mutex;
-
-  /**
-   * @brief Преобразует уровень логирования в строку.
-   * @param level Уровень логирования.
-   * @return Строковое представление уровня логирования.
-   */
-  QString logLevelToString(LogLevel level);
+      /**
+       * @brief Преобразует уровень логирования в строку.
+       * @param level Уровень логирования.
+       * @return Строковое представление уровня логирования.
+       */
+      QString logLevelToString(LogLevel level);
 };
 
 /**

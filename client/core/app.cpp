@@ -6,10 +6,9 @@
 #include "utils/logging.h"
 #include "utils/keycatcher.h"
 #include "core/errorcode.h"
+#include "core/systemfatalerror.h"
 App::App(QObject *parent)
-{
-
-}
+{}
 
 void App::init()
 {
@@ -68,7 +67,6 @@ void App::run()
     engine->rootContext()->setContextProperty("appController", appController);
     engine->load(QUrl(QStringLiteral("qrc:/kanemoot/ui/App.qml")));
     if (engine->rootObjects().isEmpty()) {
-        // LOG(Logging::Critical, "Не удалось загрузить QML");
         LOG(Logging::Critical, ErrorCode::make(ErrorCode::UI, 0x06, ErrorCode::App), "");
         qFatal("Failed to load QML");
     }
@@ -83,7 +81,6 @@ QQmlApplicationEngine *App::getEngine() const { return engine; }
 
 void App::setTheme(bool useLightTheme) {
     if (!engine || engine->rootObjects().isEmpty()) {
-        // LOG(Logging::Warning, "Не удалось установить тему: QML не загружен");
         LOG(Logging::Warning, ErrorCode::make(ErrorCode::UI, 0x01, ErrorCode::App), "Не удалось установить тему: QML не загружен");
         return;
     }
@@ -101,7 +98,6 @@ void App::setTheme(bool useLightTheme) {
     }
 
     if (!theme) {
-        // LOG(Logging::Critical, "Не удалось создать объект темы!");
         LOG(Logging::Critical, ErrorCode::make(ErrorCode::UI, 0x05, ErrorCode::App), "");
         return;
     }
@@ -109,10 +105,27 @@ void App::setTheme(bool useLightTheme) {
     rootItem->setProperty("currentTheme", QVariant::fromValue(theme));
 }
 
+void App::onErrorOccured(Logging::LogLevel level,
+                         uint32_t code,
+                         const QString &text)
+{
+    if (level == Logging::Fatal) {
+        SystemFatalError::show(text);
+        return;
+    }
+
+    if (level >= Logging::Warning) {
+        ErrorHandler::instance().showError("Ошибка", text);
+    }
+}
 
 void App::setupLogging()
 {
     SET_LOG_LEVEL(Logging::Debug);
+    connect(&Logging::instance(),
+            &Logging::errorOccured,
+            this,
+            &App::onErrorOccured);
 }
 
 void App::setupDependencies()
@@ -171,7 +184,6 @@ void App::setupSettings() {
     if (testStorage(settings, error)) {
         Logging::instance().log(Logging::Info,"Незащищённое хранилище инициализировано успешно.");
     } else {
-        // LOG(Logging::Fatal, "Ошибка инициализации незащищённого хранилища: " + error);
         LOG(Logging::Fatal, ErrorCode::make(ErrorCode::System, 0x01, ErrorCode::App), error);
     }
 }

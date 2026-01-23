@@ -4,7 +4,6 @@
 #include <QStandardPaths>
 #include "utils/logging.h"
 #include "core/errorhandler.h"
-#include "core/systemfatalerror.h"
 #include "core/errorcode.h"
 
 Logging::Logging(QObject* parent) : QObject(parent) {
@@ -64,34 +63,44 @@ Logging::LogLevel Logging::getLogLevel()
   return this->currentLevel;
 }
 
+void Logging::write(LogLevel level, const QString& message) {
+    if (level < currentLevel || !logFile.isOpen())
+        return;
+
+    QString timestamp =
+        QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss.zzz");
+    QString levelStr = logLevelToString(level);
+
+    QString logMessage =
+        QString("[%1] [%2] %3").arg(timestamp, levelStr, message);
+
+    outStream << logMessage << "\n";
+    outStream.flush();
+    qDebug().noquote() << logMessage;
+}
+
 void Logging::log(LogLevel level, const QString& message) {
     QMutexLocker locker(&mutex);
-  if (level < currentLevel || !logFile.isOpen()) {
-    return;
-  }
 
-  QString timestamp =
-      QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss.zzz");
-  QString levelStr = logLevelToString(level);
-  QString logMessage =
-      QString("[%1] [%2] %3").arg(timestamp, levelStr, message);
+    write(level, message);
 
-  outStream << logMessage << "\n";
-  outStream.flush();
-  qDebug() << logMessage.toUtf8().constData();
-  if(level >= Logging::Warning && level != Logging::Fatal) {
-      ErrorHandler::instance().showError(levelStr, message);
-  }  else if(level == Logging::Fatal) {
-      SystemFatalError::show(message);
-  }
+    if(level >= Warning)
+        emit errorOccured(level, 0, message);
 }
 
-void Logging::log(LogLevel level, uint32_t code, const QString &details) {
+
+void Logging::log(LogLevel level, uint32_t code, const QString& details) {
     QString text = ErrorCode::decode(code);
-    if (!details.isEmpty()) text += ": " + details;
-    log(level, text);
-}
+    if (!details.isEmpty())
+        text += ": " + details;
 
+    QMutexLocker locker(&mutex);
+
+    write(level, text);
+
+    if(level >= Warning)
+        emit errorOccured(level, code, text);
+}
 
 
 QString Logging::logLevelToString(LogLevel level) {
