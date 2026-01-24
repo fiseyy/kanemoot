@@ -1,267 +1,240 @@
 #include "domain/chatmanager.h"
-#include "utils/logging.h"
-#include "core/errorcode.h"
 #include "core/apiendpoints.h"
 #include "core/securestorage.h"
-#include <QTimer>
-#include <QJsonParseError>
+#include "utils/logging.h"
+#include "core/errorcode.h"
+#include <QJsonDocument>
 #include <QJsonArray>
 #include <QJsonObject>
+#include <QVariantMap>
 
-ChatManager::ChatManager(QObject *parent)
+ChatManager::ChatManager(QObject* parent)
+    : QObject(parent)
 {
-    m_socket = new WebSocketClient("chat", this);
-    connect(m_socket, &WebSocketClient::connected, this, &ChatManager::onConnected);
-    connect(m_socket, &WebSocketClient::disconnected, this, &ChatManager::disconnected);
-    connect(&ApiEndpoints::instance(), &ApiEndpoints::endpointChanged, this, &ChatManager::onEndpointChanged);
+    m_socket = new WebSocketClient(this);
+
+    connect(m_socket, &WebSocketClient::connected, this, &ChatManager::onSocketConnected);
+    connect(m_socket, &WebSocketClient::disconnected, this, &ChatManager::onSocketDisconnected);
+    connect(m_socket, &WebSocketClient::errorOccurred, this, &ChatManager::onSocketError);
     connect(m_socket, &WebSocketClient::messageReceived, this, &ChatManager::onMessageReceived);
-    connect(m_socket, &WebSocketClient::errorOccurred, this, [this](const QString &error) {
-        if (error.contains("502")) {
-            LOG(Logging::Warning, ErrorCode::make(ErrorCode::Network, 0x04, ErrorCode::ChatManager), "");
-        } else if (error.contains("SSL") || error.contains("handshake")) {
-            LOG(Logging::Warning, ErrorCode::make(ErrorCode::Network, 0x05, ErrorCode::ChatManager), "");
-        } else {
-            LOG(Logging::Warning, ErrorCode::make(ErrorCode::Network, 0x01, ErrorCode::ChatManager), error);
-        }
-    });
+
+    connect(&ApiEndpoints::instance(), &ApiEndpoints::endpointChanged,
+            this, &ChatManager::onEndpointChanged);
 }
+
+// ------------------- Public API -------------------
 
 void ChatManager::connectToChat()
 {
+    if (!m_socket) return;
+
+    auto state = m_socket->state();
+    if (state == SocketState::Connecting || state == SocketState::Connected) {
+        LOG(Logging::Warning, ErrorCode::make(ErrorCode::Network, 0x03, ErrorCode::ChatManager),
+            "Попытка подключения к чату при уже существующем соединении");
+        return;
+    }
+
     m_socket->connectToServer(ApiEndpoints::instance().getEndpoint("chat"));
 }
 
-void ChatManager::connectToServer(const QUrl &url)
+bool ChatManager::isConnected() const
 {
-    if (!m_socket)
-        return;
-
-    auto state = m_socket->getState();
-    if (state == QAbstractSocket::ConnectingState || state == QAbstractSocket::ConnectedState) {
-        LOG(Logging::Warning, ErrorCode::make(ErrorCode::Network, 0x03, ErrorCode::ChatManager), "Соединение уже выполняется/подключено");
-        return;
-    }
-
-    m_socket->connectToServer(url);
+    if (!m_socket) return false;
+    return m_socket->state() == SocketState::Connected;
 }
 
-void ChatManager::sendMessage(const QString &text)
+// ------------------- События WebSocket -------------------
+
+void ChatManager::onSocketConnected()
 {
-    if (!m_socket)
-        return;
-
-    auto state = m_socket->getState();
-    if (state == QAbstractSocket::ConnectedState) {
-        m_socket->sendMessage(text);
-    } else if (state == QAbstractSocket::UnconnectedState) {
-        LOG(Logging::Info, ErrorCode::make(ErrorCode::Network, 0x10, ErrorCode::ChatManager), "Соединение не установлено. Попытка подключиться...");
-        m_socket->connectToServer(ApiEndpoints::instance().getEndpoint("chat"));
-        m_pendingMessages.enqueue(text);
-    }
-}
-
-bool ChatManager::isConnected() const {
-    if (!m_socket)
-        return false;
-
-    auto state = m_socket->getState();
-    return state == QAbstractSocket::ConnectedState;
-}
-
-void ChatManager::onConnected()
-{
+    LOG(Logging::Debug, ErrorCode::make(ErrorCode::Network, 0x00, ErrorCode::ChatManager),
+        "Соединение с чатом установлено");
     emit connected();
-
-    while (!m_pendingMessages.isEmpty()) {
-        m_socket->sendMessage(m_pendingMessages.dequeue());
-    }
-    QTimer* pingTimer = new QTimer(m_socket);
-    QObject::connect(pingTimer, &QTimer::timeout, [this]() {
-        m_socket->ping();
-    });
-    pingTimer->start(20000);
+    sendPendingMessages();
 }
 
-void ChatManager::onDisconnected()
+void ChatManager::onSocketDisconnected(DisconnectReason reason)
 {
+    Q_UNUSED(reason);
+    LOG(Logging::Debug, ErrorCode::make(ErrorCode::Network, 0x00, ErrorCode::ChatManager),
+        "Соединение с чатом разорвано");
     emit disconnected();
 }
 
+void ChatManager::onSocketError(const QString &error)
+{
+    if (error.contains("502")) {
+        LOG(Logging::Warning, ErrorCode::make(ErrorCode::Network, 0x04, ErrorCode::ChatManager), error);
+    } else if (error.contains("SSL") || error.contains("handshake")) {
+        LOG(Logging::Warning, ErrorCode::make(ErrorCode::Network, 0x05, ErrorCode::ChatManager), error);
+    } else {
+        LOG(Logging::Warning, ErrorCode::make(ErrorCode::Network, 0x01, ErrorCode::ChatManager), error);
+    }
+    emit errorOccurred(error);
+}
+
+// ------------------- Получение сообщений -------------------
+
 void ChatManager::onMessageReceived(const QString &text)
 {
-    qDebug() << "RECEIVED " << text;
-    QJsonParseError err;
-    QJsonDocument doc = QJsonDocument::fromJson(text.toUtf8(), &err);
-    if (err.error != QJsonParseError::NoError || !doc.isObject()) {
-        LOG(Logging::Warning, ErrorCode::make(ErrorCode::Network, 0x02, ErrorCode::ChatManager), "Invalid JSON");
+    if (text.isEmpty()) return;
+
+    QJsonParseError parseError;
+    QJsonDocument doc = QJsonDocument::fromJson(text.toUtf8(), &parseError);
+    if (parseError.error != QJsonParseError::NoError || !doc.isObject()) {
+        LOG(Logging::Warning, ErrorCode::make(ErrorCode::Network, 0x02, ErrorCode::ChatManager),
+            "Неверный формат JSON: " + text.toUtf8());
         return;
     }
 
     QJsonObject obj = doc.object();
-    QString action = obj["action"].toString();
+    QString action = obj.value("action").toString();
 
     if (action == "user_servers") {
-        QJsonArray servers = obj["servers"].toArray();
+        QJsonArray servers = obj.value("servers").toArray();
         emit userServersReceived(servers);
-    }
-    else if (action == "new_message") {
-        QJsonObject messageObj = obj["message"].toObject();
-
-        QVariantMap msgMap;
-        for (auto it = messageObj.begin(); it != messageObj.end(); ++it) {
-            msgMap[it.key()] = it.value().toVariant();
-        }
-
+    } else if (action == "new_message") {
+        QVariantMap msgMap = jsonObjectToVariantMap(obj.value("message").toObject());
         emit newMessageReceived(msgMap);
-    }
-    else if (action == "messages") {
-        QJsonArray messagesArray = obj["messages"].toArray();
-
-        for (const QJsonValue &m_val : messagesArray) {
-            QJsonObject mObj = m_val.toObject();
-            QVariantMap msgMap;
-            for (auto it = mObj.begin(); it != mObj.end(); ++it) {
-                msgMap[it.key()] = it.value().toVariant();
-            }
+    } else if (action == "messages") {
+        QJsonArray messagesArray = obj.value("messages").toArray();
+        for (const QJsonValue &val : messagesArray) {
+            QVariantMap msgMap = jsonObjectToVariantMap(val.toObject());
             emit newMessageReceived(msgMap);
         }
     }
 
+    emit messageReceived(text);
 }
 
-void ChatManager::requestUserServers() {
-    QJsonObject obj;
-    obj["action"] = "get_user_servers";
+// ------------------- Отправка сообщений -------------------
 
+void ChatManager::sendPendingMessages()
+{
+    if (!m_socket) return;
+
+    while (!m_pendingMessages.isEmpty()) {
+        QJsonObject obj = m_pendingMessages.dequeue().payload;
+        QJsonDocument doc(obj);
+        QString jsonStr = QString::fromUtf8(doc.toJson(QJsonDocument::Compact));
+        m_socket->sendMessage(jsonStr);
+        LOG(Logging::Debug, ErrorCode::make(ErrorCode::Network, 0x00, ErrorCode::ChatManager),
+            "Отправлено отложенное сообщение: " + jsonStr.toUtf8());
+    }
+}
+
+void ChatManager::enqueueMessage(const QJsonObject &obj)
+{
+    m_pendingMessages.enqueue({ obj });
+}
+
+// ------------------- JWT и запросы -------------------
+
+bool ChatManager::addJwtToObject(QJsonObject &obj, const QString &action)
+{
     auto jwt_opt = SecureStorage::instance().getValue("jwt-token");
-    QString jwt_token;
-
-    if (jwt_opt.has_value()) {
-        jwt_token = jwt_opt.value();
+    if (!jwt_opt.has_value() || jwt_opt.value().isEmpty()) {
+        LOG(Logging::Warning, ErrorCode::make(ErrorCode::Network, 0x07, ErrorCode::ChatManager),
+            "JWT отсутствует, " + action + " не отправлен");
+        return false;
     }
-
-    if (jwt_token.isEmpty()) {
-        Logging::instance().log(Logging::Warning, "JWT отсутствует, запрос серверов не отправлен");
-        return;
-    }
-
-    obj["jwt"] = jwt_token;
-
-    QJsonDocument doc(obj);
-    sendMessage(QString::fromUtf8(doc.toJson(QJsonDocument::Compact)));
+    obj["jwt"] = jwt_opt.value();
+    return true;
 }
 
-void ChatManager::joinServer(const QString &inviteLink) {
-    QJsonObject obj;
-    obj["action"] = "join_server";
-    obj["url"] = inviteLink;
-
-    auto jwt_opt = SecureStorage::instance().getValue("jwt-token");
-    if (jwt_opt.has_value())
-        obj["jwt"] = jwt_opt.value();
-    else {
-        Logging::instance().log(Logging::Warning, "JWT отсутствует, join_server не отправлен");
-        return;
-    }
-
-    QJsonDocument doc(obj);
-    sendMessage(QString::fromUtf8(doc.toJson(QJsonDocument::Compact)));
+void ChatManager::requestUserServers()
+{
+    QJsonObject obj { {"action", "get_user_servers"} };
+    if (!addJwtToObject(obj, "requestUserServers")) return;
+    enqueueMessage(obj);
+    sendPendingMessages();
 }
 
-void ChatManager::createServer(const QString &name) {
-    QJsonObject obj;
-    obj["action"] = "create_server";
-    obj["name"] = name;
-
-    auto jwt_opt = SecureStorage::instance().getValue("jwt-token");
-    if (jwt_opt.has_value())
-        obj["jwt"] = jwt_opt.value();
-    else {
-        Logging::instance().log(Logging::Warning, "JWT отсутствует, create_server не отправлен");
-        return;
-    }
-
-    QJsonDocument doc(obj);
-    sendMessage(QString::fromUtf8(doc.toJson(QJsonDocument::Compact)));
+void ChatManager::joinServer(const QString &inviteLink)
+{
+    QJsonObject obj { {"action", "join_server"}, {"url", inviteLink} };
+    if (!addJwtToObject(obj, "joinServer")) return;
+    enqueueMessage(obj);
+    sendPendingMessages();
 }
 
-void ChatManager::createChannel(int serverId, const QString &name, const QString &type) {
-    QJsonObject obj;
-    obj["action"] = "create_channel";
-    obj["server_id"] = serverId;
-    obj["channel_name"] = name;
-    obj["channel_type"] = type;
-
-    auto jwt_opt = SecureStorage::instance().getValue("jwt-token");
-    if (jwt_opt.has_value()) {
-        obj["jwt"] = jwt_opt.value();
-    } else {
-        Logging::instance().log(Logging::Warning, "JWT отсутствует, create_channel не отправлен");
-        return;
-    }
-
-    QJsonDocument doc(obj);
-    sendMessage(QString::fromUtf8(doc.toJson(QJsonDocument::Compact)));
+void ChatManager::createServer(const QString &name)
+{
+    QJsonObject obj { {"action", "create_server"}, {"name", name} };
+    if (!addJwtToObject(obj, "createServer")) return;
+    enqueueMessage(obj);
+    sendPendingMessages();
 }
 
-void ChatManager::deleteChannel(int channelId, int serverId) {
-    QJsonObject obj;
-    obj["action"] = "delete_channel";
-    obj["channel_id"] = channelId;
-    obj["server_id"] = serverId;
-
-    auto jwt_opt = SecureStorage::instance().getValue("jwt-token");
-    if (jwt_opt.has_value()) {
-        obj["jwt"] = jwt_opt.value();
-    } else {
-        Logging::instance().log(Logging::Warning, "JWT отсутствует, delete_channel не отправлен");
-        return;
-    }
-
-    QJsonDocument doc(obj);
-    sendMessage(QString::fromUtf8(doc.toJson(QJsonDocument::Compact)));
+void ChatManager::createChannel(int serverId, const QString &name, const QString &type)
+{
+    QJsonObject obj {
+        {"action", "create_channel"},
+        {"server_id", serverId},
+        {"channel_name", name},
+        {"channel_type", type}
+    };
+    if (!addJwtToObject(obj, "createChannel")) return;
+    enqueueMessage(obj);
+    sendPendingMessages();
 }
 
-void ChatManager::getMessages(int channelId) {
-    QJsonObject obj;
-    obj["action"] = "get_messages";
-    obj["channel_id"] = channelId;
-
-    auto jwt_opt = SecureStorage::instance().getValue("jwt-token");
-    if (jwt_opt.has_value()) {
-        obj["jwt"] = jwt_opt.value();
-    } else {
-        Logging::instance().log(Logging::Warning, "JWT отсутствует, get_messages не отправлен");
-        return;
-    }
-
-    QJsonDocument doc(obj);
-    sendMessage(QString::fromUtf8(doc.toJson(QJsonDocument::Compact)));
+void ChatManager::deleteChannel(int channelId, int serverId)
+{
+    QJsonObject obj {
+        {"action", "delete_channel"},
+        {"channel_id", channelId},
+        {"server_id", serverId}
+    };
+    if (!addJwtToObject(obj, "deleteChannel")) return;
+    enqueueMessage(obj);
+    sendPendingMessages();
 }
 
-void ChatManager::sendChatMessage(int guildId, int channelId, const QString &text) {
+void ChatManager::getMessages(int channelId)
+{
+    QJsonObject obj { {"action", "get_messages"}, {"channel_id", channelId} };
+    if (!addJwtToObject(obj, "getMessages")) return;
+    enqueueMessage(obj);
+    sendPendingMessages();
+}
+
+void ChatManager::sendChatMessage(int guildId, int channelId, const QString &text)
+{
     if (text.trimmed().isEmpty()) return;
 
-    QJsonObject obj;
-    obj["action"] = "send_message";
-    obj["guild_id"] = guildId;
-    obj["channel_id"] = channelId;
-    obj["content"] = text;
+    QJsonObject obj {
+        {"action", "send_message"},
+        {"guild_id", guildId},
+        {"channel_id", channelId},
+        {"content", text}
+    };
+    if (!addJwtToObject(obj, "sendChatMessage")) return;
+    enqueueMessage(obj);
+    sendPendingMessages();
+}
 
-    auto jwt_opt = SecureStorage::instance().getValue("jwt-token");
-    if (jwt_opt.has_value()) {
-        obj["jwt"] = jwt_opt.value();
-    } else {
-        Logging::instance().log(Logging::Warning, "JWT отсутствует, sendChatMessage не отправлен");
-        return;
+// ------------------- ApiEndpoints -------------------
+
+void ChatManager::onEndpointChanged(const QString &service, const QUrl &newUrl)
+{
+    if (service != "chat" || !m_socket) return;
+
+    LOG(Logging::Debug, ErrorCode::make(ErrorCode::Network, 0x00, ErrorCode::ChatManager),
+        "Endpoint chat изменён: " + newUrl.toString().toUtf8());
+
+    m_socket->setLastUrl(newUrl);
+    m_socket->forceReconnect();
+}
+
+// ------------------- Вспомогательные методы -------------------
+
+QVariantMap ChatManager::jsonObjectToVariantMap(const QJsonObject &obj)
+{
+    QVariantMap map;
+    for (auto it = obj.begin(); it != obj.end(); ++it) {
+        map[it.key()] = it.value().toVariant();
     }
-
-    QJsonDocument doc(obj);
-    sendMessage(QString::fromUtf8(doc.toJson(QJsonDocument::Compact)));
+    return map;
 }
-
-void ChatManager::onEndpointChanged(const QString &service, const QUrl &newUrl) {
-    if (service != "chat") return;
-    m_socket->reconnect(newUrl);
-}
-

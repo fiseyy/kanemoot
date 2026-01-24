@@ -1,4 +1,6 @@
 #include "network/websocketclient.h"
+#include "utils/logging.h"
+#include "core/errorcode.h"
 
 WebSocketClient::WebSocketClient(QObject *parent)
     : QObject(parent),
@@ -11,12 +13,16 @@ WebSocketClient::WebSocketClient(QObject *parent)
 
 void WebSocketClient::connectToServer(const QUrl& url)
 {
+    qDebug() << "WebSocketClient --> connectToServer begin --> start";
+    qDebug() << "m_state = " << int(m_state);
+    qDebug() << "url.isValid() = " << url.isValid();
+
     if (m_state == SocketState::Connecting ||
         m_state == SocketState::Connected ||
         m_state == SocketState::Reconnecting)
         return;
 
-    if (!m_lastUrl.isValid())
+    if (!url.isValid())
         return;
 
     m_lastUrl = url;
@@ -24,6 +30,7 @@ void WebSocketClient::connectToServer(const QUrl& url)
     m_lastDisconnectReason = DisconnectReason::None;
 
     m_socket.open(url);
+    qDebug() << "WebSocketClient --> connectToServer begin --> finish";
 }
 
 void WebSocketClient::disconnectFromServer()
@@ -36,11 +43,18 @@ void WebSocketClient::disconnectFromServer()
 }
 
 void WebSocketClient::forceReconnect() {
+    cleanupReconnect();
     m_retryCount = 0;
     m_lastDisconnectReason = DisconnectReason::None;
-    m_socket.abort();
+
+    if (m_state == SocketState::Connecting || m_state == SocketState::Reconnecting) {
+        m_socket.abort();
+    }
+
+    m_state = SocketState::Idle;
     connectToServer(m_lastUrl);
 }
+
 
 void WebSocketClient::sendMessage(const QString& msg)
 {
@@ -54,6 +68,16 @@ void WebSocketClient::setDisconnectReason(DisconnectReason reason)
 {
     m_lastDisconnectReason = reason;
 }
+
+void WebSocketClient::setLastUrl(const QUrl& url)
+{
+    if (url.isValid()) {
+        m_lastUrl = url;
+        LOG(Logging::Debug, ErrorCode::make(ErrorCode::Network, 0x00, ErrorCode::WebSocketClient),
+            "WebSocket URL обновлён: " + url.toString().toUtf8());
+    }
+}
+
 
 SocketState WebSocketClient::state() const {
     return m_state;
@@ -70,11 +94,13 @@ void WebSocketClient::onConnected()
     m_state = SocketState::Connected;
     m_lastDisconnectReason = DisconnectReason::None;
 
+    startPing();
     emit connected();
 }
 
 void WebSocketClient::onDisconnected()
 {
+    stopPing();
     if (m_state == SocketState::Disconnected &&
         m_lastDisconnectReason == DisconnectReason::Manual) {
         emit disconnected(m_lastDisconnectReason);
@@ -102,8 +128,6 @@ void WebSocketClient::onError(QAbstractSocket::SocketError)
         m_socket.close();
 }
 
-
-
 void WebSocketClient::setupSocket()
 {
     connect(&m_socket, &QWebSocket::connected,
@@ -118,7 +142,7 @@ void WebSocketClient::setupSocket()
             &WebSocketClient::onError);
 
     connect(&m_socket, &QWebSocket::textMessageReceived,
-            this, &WebSocketClient::onTextMessageReceived);
+            this, &WebSocketClient::messageReceived);
 
     connect(&m_reconnectTimer, &QTimer::timeout,
             this, &WebSocketClient::doReconnect);
@@ -157,4 +181,24 @@ void WebSocketClient::doReconnect()
     m_state = SocketState::Connecting;
 
     connectToServer(m_lastUrl);
+}
+
+void WebSocketClient::startPing()
+{
+    if (!m_pingTimer.isActive()) {
+        connect(&m_pingTimer, &QTimer::timeout, [this]() {
+            if (m_state == SocketState::Connected) {
+                m_socket.ping();
+            }
+        });
+        m_pingTimer.start(20000); // каждые 20 сек
+    }
+}
+
+void WebSocketClient::stopPing()
+{
+    if (m_pingTimer.isActive()) {
+        m_pingTimer.stop();
+        disconnect(&m_pingTimer, nullptr, nullptr, nullptr);
+    }
 }

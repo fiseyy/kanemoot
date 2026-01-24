@@ -22,7 +22,6 @@ void LoginPage::init()
     QObject *root = getRootObject();
 
     if (!root) {
-        // LOG(Logging::Critical, "LoginPage: объект root не инициализован");
         LOG(Logging::Critical, ErrorCode::make(ErrorCode::UI, 0x06, ErrorCode::LoginPage), "");
         return;
     }

@@ -40,6 +40,7 @@ public:
     void forceReconnect();
     void sendMessage(const QString&);
     void setDisconnectReason(DisconnectReason reason);
+    void setLastUrl(const QUrl& url);
 
     SocketState state() const;
     DisconnectReason lastDisconnectReason() const;
@@ -54,7 +55,6 @@ private slots:
     void onConnected();
     void onDisconnected();
     void onError(QAbstractSocket::SocketError error);
-    void onTextMessageReceived(const QString& msg);
 
 private:
     QWebSocket m_socket;
@@ -67,11 +67,14 @@ private:
     RetryPolicy m_retryPolicy;
     int m_retryCount = 0;
     QTimer m_reconnectTimer;
+    QTimer m_pingTimer;
 
     void setupSocket();
     void cleanupReconnect();
     void scheduleReconnect();
     void doReconnect();
+    void startPing();
+    void stopPing();
 };
 
 

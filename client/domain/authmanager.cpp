@@ -23,6 +23,7 @@ AuthManager::AuthManager(QObject *parent)
 
 void AuthManager::tryAuth(const QString &login, const QString &password)
 {
+    qDebug() << "AUTHMANAGER --> tryAuth --> start";
     if (!m_socket) return;
 
     if (m_socket->state() == SocketState::Connecting) {
@@ -39,6 +40,7 @@ void AuthManager::tryAuth(const QString &login, const QString &password)
     };
 
     sendPendingRequest();
+    qDebug() << "AUTHMANAGER --> tryAuth --> finish";
 }
 
 void AuthManager::tryReg(const QString &login, const QString &password, const QString &email)
@@ -107,8 +109,13 @@ void AuthManager::onSocketError(const QString &error)
 
 void AuthManager::onEndpointChanged(const QString &service, const QUrl &newUrl)
 {
-    if (service != "auth") return;
-    if (m_socket) m_socket->forceReconnect();
+    if (service != "auth" || !m_socket) return;
+
+    LOG(Logging::Debug, ErrorCode::make(ErrorCode::Network, 0x00, ErrorCode::ChatManager),
+        "Endpoint chat изменён: " + newUrl.toString().toUtf8());
+
+    m_socket->setLastUrl(newUrl);
+    m_socket->forceReconnect();
 }
 
 void AuthManager::onMessageReceived(const QString &message)
@@ -142,19 +149,19 @@ void AuthManager::onMessageReceived(const QString &message)
     if (success) {
         if (!jwtToken.isEmpty()) {
             SecureStorage::instance().setValue("jwt-token", jwtToken);
-            LOG(Logging::Debug, ErrorCode::make(ErrorCode::System, 0x03, ErrorCode::AuthManager), "JWT-токен записан");
+            Logging::instance().log(Logging::Debug, "JWT-токен записан");
         }
         if (!accessToken.isEmpty()) {
             SecureStorage::instance().setValue("access-token", accessToken);
-            LOG(Logging::Debug, ErrorCode::make(ErrorCode::System, 0x03, ErrorCode::AuthManager), "Access-токен записан");
+            Logging::instance().log(Logging::Debug, "Access-токен записан");
         }
         if (!m_username.isEmpty()) {
             SecureStorage::instance().setValue("username", m_username);
-            LOG(Logging::Debug, ErrorCode::make(ErrorCode::System, 0x03, ErrorCode::AuthManager), "Имя пользователя записано");
+            Logging::instance().log(Logging::Debug, "Имя пользователя записано");
         }
         if (userId != -1) {
             SecureStorage::instance().setValue("user_id", QString::number(userId));
-            LOG(Logging::Debug, ErrorCode::make(ErrorCode::System, 0x03, ErrorCode::AuthManager), "ID пользователя записан");
+            Logging::instance().log(Logging::Debug, "Имя пользователя записано");
         }
 
         clearPendingRequest();
@@ -169,6 +176,7 @@ void AuthManager::onMessageReceived(const QString &message)
 
 void AuthManager::sendPendingRequest()
 {
+    qDebug() << "AUTHMANAGER --> sendPendingRequest begin --> start";
     if (!m_socket) return;
     if (m_pendingRequest.type == AuthRequestType::None) return;
 
@@ -181,6 +189,7 @@ void AuthManager::sendPendingRequest()
                m_socket->state() == SocketState::Disconnected) {
         m_socket->connectToServer(ApiEndpoints::instance().getEndpoint("auth"));
     }
+    qDebug() << "AUTHMANAGER --> sendPendingRequest begin --> finish";
 }
 
 void AuthManager::clearPendingRequest()
