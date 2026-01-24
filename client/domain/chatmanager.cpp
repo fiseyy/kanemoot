@@ -11,13 +11,9 @@
 ChatManager::ChatManager(QObject *parent)
 {
     m_socket = new WebSocketClient("chat", this);
-    connect(m_socket, &WebSocketClient::connected, this, [this]() {
-        emit connected();
-        onConnected();
-    });
-    connect(m_socket, &WebSocketClient::disconnected, this, [this]() {
-        emit disconnected();
-    });
+    connect(m_socket, &WebSocketClient::connected, this, &ChatManager::onConnected);
+    connect(m_socket, &WebSocketClient::disconnected, this, &ChatManager::disconnected);
+    connect(&ApiEndpoints::instance(), &ApiEndpoints::endpointChanged, this, &ChatManager::onEndpointChanged);
     connect(m_socket, &WebSocketClient::messageReceived, this, &ChatManager::onMessageReceived);
     connect(m_socket, &WebSocketClient::errorOccurred, this, [this](const QString &error) {
         if (error.contains("502")) {
@@ -74,7 +70,8 @@ bool ChatManager::isConnected() const {
 
 void ChatManager::onConnected()
 {
-    // emit connected();
+    emit connected();
+
     while (!m_pendingMessages.isEmpty()) {
         m_socket->sendMessage(m_pendingMessages.dequeue());
     }
@@ -247,8 +244,8 @@ void ChatManager::sendChatMessage(int guildId, int channelId, const QString &tex
 
     QJsonObject obj;
     obj["action"] = "send_message";
-    obj["guild_id"] = guildId;       // добавили
-    obj["channel_id"] = channelId;   // уже был
+    obj["guild_id"] = guildId;
+    obj["channel_id"] = channelId;
     obj["content"] = text;
 
     auto jwt_opt = SecureStorage::instance().getValue("jwt-token");
@@ -262,3 +259,9 @@ void ChatManager::sendChatMessage(int guildId, int channelId, const QString &tex
     QJsonDocument doc(obj);
     sendMessage(QString::fromUtf8(doc.toJson(QJsonDocument::Compact)));
 }
+
+void ChatManager::onEndpointChanged(const QString &service, const QUrl &newUrl) {
+    if (service != "chat") return;
+    m_socket->reconnect(newUrl);
+}
+

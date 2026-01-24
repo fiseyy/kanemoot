@@ -14,6 +14,10 @@ public:
     void tryAuth(const QString& login, const QString& password);
     void tryReg(const QString& login, const QString& password, const QString& email);
     void tryAutoTokenLogin(const QString &access_token);
+
+public slots:
+    void onEndpointChanged(const QString &service, const QUrl &newUrl);
+
 signals:
     void authSucceeded();
     void authFailed(const QString& error);

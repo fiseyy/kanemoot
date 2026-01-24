@@ -25,6 +25,7 @@ public:
      */
     static ApiEndpoints &instance();
 
+    void setEndpoint(const QString &service, const QUrl &url);
     /**
      * @brief Возвращает URL для указанного сервиса.
      * @param service Название сервиса (например, "auth", "chat").
@@ -38,6 +39,9 @@ public:
      * @return Название сервиса (например, "auth", "chat").
      */
     QString getServiceName(const QUrl &url) const;
+
+signals:
+    void endpointChanged(const QString &service, const QUrl &newUrl);
 
 private:
     explicit ApiEndpoints(QObject *parent = nullptr); // Приватный конструктор

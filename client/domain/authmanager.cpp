@@ -11,12 +11,11 @@ AuthManager::AuthManager(QObject *parent)
     m_socket = new WebSocketClient("auth", this);
     connect(m_socket, &WebSocketClient::connected, this, &AuthManager::onConnected);
     connect(m_socket, &WebSocketClient::messageReceived, this, &AuthManager::onMessageReceived);
+    connect(&ApiEndpoints::instance(), &ApiEndpoints::endpointChanged, this, &AuthManager::onEndpointChanged);
     connect(m_socket, &WebSocketClient::errorOccurred, this, [this](const QString &error) {
         if (error.contains("502")) {
-            // userFriendly = "Сервер временно недоступен. Повторите попытку позже.";
             LOG(Logging::Warning, ErrorCode::make(ErrorCode::Network, 0x04, ErrorCode::AuthManager), "");
         } else if (error.contains("SSL") || error.contains("handshake")) {
-            // userFriendly = "Ошибка шифрования. Проверьте подключение.";
             LOG(Logging::Warning, ErrorCode::make(ErrorCode::Network, 0x05, ErrorCode::AuthManager), "");
         } else {
             LOG(Logging::Warning, ErrorCode::make(ErrorCode::Network, 0x01, ErrorCode::AuthManager), error);
@@ -28,7 +27,6 @@ AuthManager::AuthManager(QObject *parent)
 void AuthManager::tryAuth(const QString &login, const QString &password)
 {
     if (m_socket && m_socket->getState() == QAbstractSocket::ConnectingState) {
-        // ErrorHandler::instance().showError("Предупреждение", "Подключение уже выполняется. Подождите.");
         LOG(Logging::Warning, ErrorCode::make(ErrorCode::Network, 0x03, ErrorCode::AuthManager), "");
         return;
     }
@@ -95,6 +93,11 @@ void AuthManager::tryAutoTokenLogin(const QString &access_token)
     }
 }
 
+void AuthManager::onEndpointChanged(const QString &service, const QUrl &newUrl) {
+    if (service != "auth") return;
+
+    m_socket->reconnect(newUrl);
+}
 
 void AuthManager::onConnected()
 {
@@ -148,6 +151,4 @@ void AuthManager::onMessageReceived(const QString &text)
         QString raw = obj.value("error").toString();
         emit authFailed(raw);
     }
-
-    this->m_socket->disconnect();
 }

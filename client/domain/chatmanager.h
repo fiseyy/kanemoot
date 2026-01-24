@@ -32,6 +32,9 @@ signals:
     void errorOccurred(const QString &error);
     void userServersReceived(const QJsonArray &servers);
 
+public slots:
+    void onEndpointChanged(const QString &service, const QUrl &newUrl);
+
 private slots:
     void onConnected();
     void onDisconnected();

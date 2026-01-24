@@ -7,6 +7,12 @@ ApiEndpoints &ApiEndpoints::instance() {
     return instance;
 }
 
+void ApiEndpoints::setEndpoint(const QString &service, const QUrl &url) {
+    m_endpoints[service] = url;
+    emit endpointChanged(service, url);
+}
+
+
 ApiEndpoints::ApiEndpoints(QObject *parent) : QObject(parent) {
     initializeDefaultEndpoints();
 }
