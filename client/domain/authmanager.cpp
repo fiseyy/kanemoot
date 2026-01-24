@@ -8,113 +8,124 @@
 AuthManager::AuthManager(QObject *parent)
     : QObject(parent)
 {
-    m_socket = new WebSocketClient("auth", this);
-    connect(m_socket, &WebSocketClient::connected, this, &AuthManager::onConnected);
+    m_socket = new WebSocketClient(this);
+
+    connect(m_socket, &WebSocketClient::connected, this, &AuthManager::onSocketConnected);
+    connect(m_socket, &WebSocketClient::disconnected, this, &AuthManager::onSocketDisconnected);
+    connect(m_socket, &WebSocketClient::errorOccurred, this, &AuthManager::onSocketError);
     connect(m_socket, &WebSocketClient::messageReceived, this, &AuthManager::onMessageReceived);
-    connect(&ApiEndpoints::instance(), &ApiEndpoints::endpointChanged, this, &AuthManager::onEndpointChanged);
-    connect(m_socket, &WebSocketClient::errorOccurred, this, [this](const QString &error) {
-        if (error.contains("502")) {
-            LOG(Logging::Warning, ErrorCode::make(ErrorCode::Network, 0x04, ErrorCode::AuthManager), "");
-        } else if (error.contains("SSL") || error.contains("handshake")) {
-            LOG(Logging::Warning, ErrorCode::make(ErrorCode::Network, 0x05, ErrorCode::AuthManager), "");
-        } else {
-            LOG(Logging::Warning, ErrorCode::make(ErrorCode::Network, 0x01, ErrorCode::AuthManager), error);
-        }
-        emit authFailed("");
-    });
+
+    connect(&ApiEndpoints::instance(), &ApiEndpoints::endpointChanged,
+            this, &AuthManager::onEndpointChanged);
 }
+
+// ------------------- Public API -------------------
 
 void AuthManager::tryAuth(const QString &login, const QString &password)
 {
-    if (m_socket && m_socket->getState() == QAbstractSocket::ConnectingState) {
-        LOG(Logging::Warning, ErrorCode::make(ErrorCode::Network, 0x03, ErrorCode::AuthManager), "");
+    if (!m_socket) return;
+
+    if (m_socket->state() == SocketState::Connecting) {
+        LOG(Logging::Warning, ErrorCode::make(ErrorCode::Network, 0x03, ErrorCode::AuthManager), "Попытка Auth во время подключения");
         return;
     }
 
-    QJsonObject obj;
-    obj["action"] = "login";
-    obj["user"] = login;
-    obj["password"] = password;
-    this->username = login;
+    m_username = login;
+    m_pendingRequest.type = AuthRequestType::Login;
+    m_pendingRequest.payload = {
+        {"action", "login"},
+        {"user", login},
+        {"password", password}
+    };
 
-    QJsonDocument doc(obj);
-    m_pendingRequest = doc.toJson(QJsonDocument::Compact);
-
-    if (m_socket->getState() == QAbstractSocket::ConnectedState) {
-        m_socket->sendMessage(m_pendingRequest);
-    } else {
-        m_socket->connectToServer(ApiEndpoints::instance().getEndpoint("auth"));
-    }
+    sendPendingRequest();
 }
 
 void AuthManager::tryReg(const QString &login, const QString &password, const QString &email)
 {
-    if (m_socket && m_socket->getState() == QAbstractSocket::ConnectingState) {
-        // ErrorHandler::instance().showError("Предупреждение", "Подключение уже выполняется. Подождите.");
-        LOG(Logging::Warning, ErrorCode::make(ErrorCode::Network, 0x03, ErrorCode::AuthManager), "");
+    if (!m_socket) return;
+
+    if (m_socket->state() == SocketState::Connecting) {
+        LOG(Logging::Warning, ErrorCode::make(ErrorCode::Network, 0x03, ErrorCode::AuthManager), "Попытка Registration во время подключения");
         return;
     }
 
-    QJsonObject obj;
-    obj["action"] = "reg";
-    obj["user"] = login;
-    obj["password"] = password;
-    obj["email"] = email;
-    this->username = login;
+    m_username = login;
+    m_pendingRequest.type = AuthRequestType::Register;
+    m_pendingRequest.payload = {
+        {"action", "reg"},
+        {"user", login},
+        {"password", password},
+        {"email", email}
+    };
 
-    QJsonDocument doc(obj);
-    m_pendingRequest = doc.toJson(QJsonDocument::Compact);
-
-    if (m_socket->getState() == QAbstractSocket::ConnectedState) {
-        m_socket->sendMessage(m_pendingRequest);
-    } else {
-        m_socket->connectToServer(ApiEndpoints::instance().getEndpoint("auth"));
-    }
+    sendPendingRequest();
 }
 
-void AuthManager::tryAutoTokenLogin(const QString &access_token)
+void AuthManager::tryAutoTokenLogin(const QString &accessToken)
 {
-    if (m_socket && m_socket->getState() == QAbstractSocket::ConnectingState) {
-        LOG(Logging::Warning, ErrorCode::make(ErrorCode::Network, 0x03, ErrorCode::AuthManager), "");
+    if (!m_socket) return;
+
+    if (m_socket->state() == SocketState::Connecting) {
+        LOG(Logging::Warning, ErrorCode::make(ErrorCode::Network, 0x03, ErrorCode::AuthManager), "Попытка AutoTokenLogin во время подключения");
         return;
     }
 
-    QJsonObject obj;
-    obj["action"] = "auto_token_login";
-    obj["token"] = access_token;
+    m_pendingRequest.type = AuthRequestType::AutoToken;
+    m_pendingRequest.payload = {
+        {"action", "auto_token_login"},
+        {"token", accessToken}
+    };
 
-    QJsonDocument doc(obj);
-    m_pendingRequest = doc.toJson(QJsonDocument::Compact);
-
-    if (m_socket->getState() == QAbstractSocket::ConnectedState) {
-        m_socket->sendMessage(m_pendingRequest);
-    } else {
-        m_socket->connectToServer(ApiEndpoints::instance().getEndpoint("auth"));
-    }
+    sendPendingRequest();
 }
 
-void AuthManager::onEndpointChanged(const QString &service, const QUrl &newUrl) {
+// ------------------- Slots -------------------
+
+void AuthManager::onSocketConnected()
+{
+    sendPendingRequest();
+}
+
+void AuthManager::onSocketDisconnected(DisconnectReason reason)
+{
+    Q_UNUSED(reason);
+    // здесь пока ничего не делаем, обработка ошибок через errorOccurred
+}
+
+void AuthManager::onSocketError(const QString &error)
+{
+    if (error.contains("502")) {
+        LOG(Logging::Warning, ErrorCode::make(ErrorCode::Network, 0x04, ErrorCode::AuthManager), error);
+    } else if (error.contains("SSL") || error.contains("handshake")) {
+        LOG(Logging::Warning, ErrorCode::make(ErrorCode::Network, 0x05, ErrorCode::AuthManager), error);
+    } else {
+        LOG(Logging::Warning, ErrorCode::make(ErrorCode::Network, 0x01, ErrorCode::AuthManager), error);
+    }
+    failAuth("");
+}
+
+void AuthManager::onEndpointChanged(const QString &service, const QUrl &newUrl)
+{
     if (service != "auth") return;
-
-    m_socket->reconnect(newUrl);
+    if (m_socket) m_socket->forceReconnect();
 }
 
-void AuthManager::onConnected()
+void AuthManager::onMessageReceived(const QString &message)
 {
-    if (!m_pendingRequest.isEmpty()) {
-        m_socket->sendMessage(m_pendingRequest);
-    }
-}
-
-void AuthManager::onMessageReceived(const QString &text)
-{
-    qDebug() << text;
-    QJsonDocument doc = QJsonDocument::fromJson(text.toUtf8());
-    if (!doc.isObject()) {
-        emit authFailed("Неверный формат ответа сервера");
-        LOG(Logging::Debug, ErrorCode::make(ErrorCode::UI, 0x02, ErrorCode::AuthManager), "Полученный ответ сервера: " + text.toUtf8());
+    if (message.isEmpty()) {
+        failAuth("Пустой ответ сервера");
         return;
     }
+
+    QJsonDocument doc = QJsonDocument::fromJson(message.toUtf8());
+    if (!doc.isObject()) {
+        LOG(Logging::Debug, ErrorCode::make(ErrorCode::Network, 0x02, ErrorCode::AuthManager),
+            "Неверный формат ответа сервера: " + message.toUtf8());
+        failAuth("Неверный формат ответа сервера");
+        return;
+    }
+
     QJsonObject obj = doc.object();
     bool success = false;
     QJsonValue successVal = obj.value("success");
@@ -124,31 +135,63 @@ void AuthManager::onMessageReceived(const QString &text)
         success = successVal.toString().toLower() == "true";
     }
 
-    QString jwt_token = obj.value("jwt").toString();
-    QString access_token = obj.value("access_token").toString();
+    QString jwtToken = obj.value("jwt").toString();
+    QString accessToken = obj.value("access_token").toString();
     int userId = obj.value("user_id").toInt(-1);
 
     if (success) {
-        if (!jwt_token.isEmpty()) {
-            SecureStorage::instance().setValue("jwt-token", jwt_token);
-            Logging::instance().log(Logging::Debug, "JWT-токен записан.");
+        if (!jwtToken.isEmpty()) {
+            SecureStorage::instance().setValue("jwt-token", jwtToken);
+            LOG(Logging::Debug, ErrorCode::make(ErrorCode::System, 0x03, ErrorCode::AuthManager), "JWT-токен записан");
         }
-        if (!access_token.isEmpty()) {
-            SecureStorage::instance().setValue("access-token", access_token);
-            Logging::instance().log(Logging::Debug, "Access-токен записан.");
+        if (!accessToken.isEmpty()) {
+            SecureStorage::instance().setValue("access-token", accessToken);
+            LOG(Logging::Debug, ErrorCode::make(ErrorCode::System, 0x03, ErrorCode::AuthManager), "Access-токен записан");
         }
-
-        if (!username.isEmpty()) {
-            SecureStorage::instance().setValue("username", username);
-            Logging::instance().log(Logging::Debug, "Имя пользователя записано.");
+        if (!m_username.isEmpty()) {
+            SecureStorage::instance().setValue("username", m_username);
+            LOG(Logging::Debug, ErrorCode::make(ErrorCode::System, 0x03, ErrorCode::AuthManager), "Имя пользователя записано");
         }
         if (userId != -1) {
             SecureStorage::instance().setValue("user_id", QString::number(userId));
-            Logging::instance().log(Logging::Debug, "ID пользователя записан.");
+            LOG(Logging::Debug, ErrorCode::make(ErrorCode::System, 0x03, ErrorCode::AuthManager), "ID пользователя записан");
         }
+
+        clearPendingRequest();
         emit authSucceeded();
     } else {
         QString raw = obj.value("error").toString();
-        emit authFailed(raw);
+        failAuth(raw);
     }
+}
+
+// ------------------- Private helpers -------------------
+
+void AuthManager::sendPendingRequest()
+{
+    if (!m_socket) return;
+    if (m_pendingRequest.type == AuthRequestType::None) return;
+
+    QJsonDocument doc(m_pendingRequest.payload);
+    QString jsonStr = doc.toJson(QJsonDocument::Compact);
+
+    if (m_socket->state() == SocketState::Connected) {
+        m_socket->sendMessage(jsonStr);
+    } else if (m_socket->state() == SocketState::Idle ||
+               m_socket->state() == SocketState::Disconnected) {
+        m_socket->connectToServer(ApiEndpoints::instance().getEndpoint("auth"));
+    }
+}
+
+void AuthManager::clearPendingRequest()
+{
+    m_pendingRequest.type = AuthRequestType::None;
+    m_pendingRequest.payload = {};
+    m_username.clear();
+}
+
+void AuthManager::failAuth(const QString &errorMessage, bool markAuthFailed)
+{
+    if (markAuthFailed) clearPendingRequest();
+    emit authFailed(errorMessage);
 }
