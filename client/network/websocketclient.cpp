@@ -137,7 +137,7 @@ void WebSocketClient::setupSocket()
             this, &WebSocketClient::onDisconnected);
 
     connect(&m_socket,
-            QOverload<QAbstractSocket::SocketError>::of(&QWebSocket::error),
+            &QWebSocket::errorOccurred,
             this,
             &WebSocketClient::onError);
 

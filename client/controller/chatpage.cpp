@@ -13,15 +13,6 @@
 #include <QQuickItem>
 ChatPage::ChatPage(QObject *parent) {
     m_chatmgr = new ChatManager(this);
-    m_reconnectTimer = new QTimer(this);
-    m_reconnectTimer->setInterval(2000);
-    m_reconnectTimer->setSingleShot(false);
-    connect(m_reconnectTimer, &QTimer::timeout, [this]() {
-        if (!m_chatmgr->isConnected()) {
-            Logging::instance().log(Logging::Debug, "Пробуем переподключиться к Chat Service...");
-            m_chatmgr->connectToChat();
-        }
-    });
     connect(m_chatmgr, &ChatManager::newMessageReceived, this, [this](const QVariantMap &msg){
         if (!chatList) {
             qWarning() << "ChatList не объявлен!";
@@ -130,7 +121,6 @@ ChatPage::ChatPage(QObject *parent) {
 
 
     connect(m_chatmgr, &ChatManager::connected, [this]() {
-        m_reconnectTimer->stop();
         if(m_showingLoading)
             m_showingLoading = false;
         emit connectedToChat();
@@ -149,8 +139,6 @@ ChatPage::ChatPage(QObject *parent) {
                 ErrorHandler::instance().setHiden(true);
             }
         }
-
-        if (!m_reconnectTimer->isActive()) m_reconnectTimer->start();
     });
 }
 
@@ -255,11 +243,6 @@ void ChatPage::cleanup() {
     if (m_chatmgr) {
         m_chatmgr->deleteLater();
         m_chatmgr = nullptr;
-    }
-    if (m_reconnectTimer) {
-        m_reconnectTimer->stop();
-        m_reconnectTimer->deleteLater();
-        m_reconnectTimer = nullptr;
     }
 }
 

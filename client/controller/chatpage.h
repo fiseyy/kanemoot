@@ -32,7 +32,6 @@ private:
     void setTheme(bool useLightTheme);
     QObject *currentTheme() const;
     bool m_showingLoading = true;
-    QTimer* m_reconnectTimer = nullptr;
     ChatManager* m_chatmgr = nullptr;
 };
 
