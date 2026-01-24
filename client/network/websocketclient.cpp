@@ -1,150 +1,160 @@
 #include "network/websocketclient.h"
-#include "utils/logging.h"
-#include "core/errorcode.h"
-#include <QTimer>
 
-WebSocketClient::WebSocketClient(QString serviceName, QObject *parent)
-    : QObject(parent), m_serviceName(serviceName)
+WebSocketClient::WebSocketClient(QObject *parent)
+    : QObject(parent),
+    m_state(SocketState::Idle),
+    m_lastDisconnectReason(DisconnectReason::None)
 {
-    m_webSocket = new QWebSocket();
-
-    connectSignals();
-
-    Logging::instance().log(Logging::Debug, "(" + m_serviceName + ") WebSocketClient инициализирован");
+    setupSocket();
+    m_socket.setSslConfiguration(QSslConfiguration::defaultConfiguration());
 }
 
-WebSocketClient::~WebSocketClient()
+void WebSocketClient::connectToServer(const QUrl& url)
 {
-    if (m_webSocket->state() != QAbstractSocket::UnconnectedState)
-        m_webSocket->abort();
+    if (m_state == SocketState::Connecting ||
+        m_state == SocketState::Connected ||
+        m_state == SocketState::Reconnecting)
+        return;
+
+    if (!m_lastUrl.isValid())
+        return;
+
+    m_lastUrl = url;
+    m_state = SocketState::Connecting;
+    m_lastDisconnectReason = DisconnectReason::None;
+
+    m_socket.open(url);
 }
 
-void WebSocketClient::connectToServer(const QUrl &url)
+void WebSocketClient::disconnectFromServer()
 {
-    if (!m_webSocket) {
-        m_webSocket = new QWebSocket();
-        connectSignals();
-    }
+    cleanupReconnect();
 
-    if (m_webSocket->state() == QAbstractSocket::ConnectedState ||
-        m_webSocket->state() == QAbstractSocket::ConnectingState) {
-        qDebug() << "DEBUG --- Не закрыт сокет, сброс команды connectToServer..";
+    m_lastDisconnectReason = DisconnectReason::Manual;
+
+    m_socket.close();
+}
+
+void WebSocketClient::forceReconnect() {
+    m_retryCount = 0;
+    m_lastDisconnectReason = DisconnectReason::None;
+    m_socket.abort();
+    connectToServer(m_lastUrl);
+}
+
+void WebSocketClient::sendMessage(const QString& msg)
+{
+    if (m_state != SocketState::Connected)
+        return;
+
+    m_socket.sendTextMessage(msg);
+}
+
+void WebSocketClient::setDisconnectReason(DisconnectReason reason)
+{
+    m_lastDisconnectReason = reason;
+}
+
+SocketState WebSocketClient::state() const {
+    return m_state;
+}
+
+DisconnectReason WebSocketClient::lastDisconnectReason() const {
+    return m_lastDisconnectReason;
+}
+
+void WebSocketClient::onConnected()
+{
+    cleanupReconnect();
+
+    m_state = SocketState::Connected;
+    m_lastDisconnectReason = DisconnectReason::None;
+
+    emit connected();
+}
+
+void WebSocketClient::onDisconnected()
+{
+    if (m_state == SocketState::Disconnected &&
+        m_lastDisconnectReason == DisconnectReason::Manual) {
+        emit disconnected(m_lastDisconnectReason);
         return;
     }
 
-    qDebug() << "DEBUG --- connectToServer, WebSocketClient start. url = " << url << ", socket state = " << m_webSocket->state();
-    m_webSocket->setSslConfiguration(QSslConfiguration::defaultConfiguration());
-    m_webSocket->open(url);
-    qDebug() << "DEBUG --- connectToServer, WebSocketClient finish";
+    if (m_lastDisconnectReason == DisconnectReason::None)
+        m_lastDisconnectReason = DisconnectReason::ServerClosed;
 
+    m_state = SocketState::Disconnected;
+    emit disconnected(m_lastDisconnectReason);
+
+    if (m_lastDisconnectReason != DisconnectReason::Manual)
+        scheduleReconnect();
 }
 
-void WebSocketClient::sendMessage(const QString &message)
+void WebSocketClient::onError(QAbstractSocket::SocketError)
 {
-    if (m_webSocket->state() == QAbstractSocket::ConnectedState) {
-        m_webSocket->sendTextMessage(message);
-    } else {
-        LOG(Logging::Warning, ErrorCode::make(ErrorCode::Network, 0x04, ErrorCode::WebSocketClient), "");
-        qDebug() << m_webSocket->state();
-    }
+    if (m_lastDisconnectReason == DisconnectReason::None)
+        m_lastDisconnectReason = DisconnectReason::NetworkError;
+
+    emit errorOccurred(m_socket.errorString());
+
+    if (m_state != SocketState::Disconnected)
+        m_socket.close();
 }
 
-void WebSocketClient::close()
+
+
+void WebSocketClient::setupSocket()
 {
-    if (!m_webSocket) return;
+    connect(&m_socket, &QWebSocket::connected,
+            this, &WebSocketClient::onConnected);
 
-    if (m_webSocket->state() != QAbstractSocket::UnconnectedState) {
-        m_webSocket->close();
-    }
+    connect(&m_socket, &QWebSocket::disconnected,
+            this, &WebSocketClient::onDisconnected);
 
-    m_webSocket->disconnect();
-    m_webSocket->deleteLater();
-    m_webSocket = nullptr;
+    connect(&m_socket,
+            QOverload<QAbstractSocket::SocketError>::of(&QWebSocket::error),
+            this,
+            &WebSocketClient::onError);
 
-    Logging::instance().log(Logging::Info, "(" + m_serviceName + ") WebSocket-соединение закрыто вручную");
+    connect(&m_socket, &QWebSocket::textMessageReceived,
+            this, &WebSocketClient::onTextMessageReceived);
+
+    connect(&m_reconnectTimer, &QTimer::timeout,
+            this, &WebSocketClient::doReconnect);
+
+    m_reconnectTimer.setSingleShot(true);
 }
 
-void WebSocketClient::reconnect(const QUrl &url)
+void WebSocketClient::cleanupReconnect()
 {
-    if (!m_webSocket) {
-        createAndConnect(url);
+    m_reconnectTimer.stop();
+    m_retryCount = 0;
+}
+
+
+void WebSocketClient::scheduleReconnect()
+{
+    if (m_retryCount >= m_retryPolicy.maxRetries) {
+        cleanupReconnect();
         return;
     }
 
-    if (m_webSocket->state() == QAbstractSocket::UnconnectedState) {
-        createAndConnect(url);
+    m_state = SocketState::Reconnecting;
+
+    int delay = m_retryPolicy.baseDelayMs * (m_retryCount + 1);
+    delay = qMin(delay, m_retryPolicy.maxDelayMs);
+
+    ++m_retryCount;
+    m_reconnectTimer.start(delay);
+}
+
+void WebSocketClient::doReconnect()
+{
+    if (m_state != SocketState::Reconnecting)
         return;
-    }
 
-    // Сохраняем URL
-    m_pendingUrl = url;
+    m_state = SocketState::Connecting;
 
-    // Таймаут форсированного закрытия
-    QTimer::singleShot(3000, this, [this]() {
-        if (m_webSocket && m_webSocket->state() != QAbstractSocket::UnconnectedState) {
-            m_webSocket->abort(); // форсируем завершение SSL/подключения
-        }
-    });
-
-    // Ждём события disconnected для нового подключения
-    connect(m_webSocket, &QWebSocket::disconnected, this, [this]() {
-        QWebSocket *oldSocket = m_webSocket;
-        createAndConnect(m_pendingUrl);
-        oldSocket->deleteLater();  // удаляем старый только после старта нового
-        m_pendingUrl = QUrl();
-    }, Qt::SingleShotConnection);
-
-    m_webSocket->close();
+    connectToServer(m_lastUrl);
 }
-
-void WebSocketClient::onReconnectSlot()
-{
-    if (m_pendingUrl.isValid()) {
-        QUrl url = m_pendingUrl;
-        m_pendingUrl = QUrl();
-
-        if (m_webSocket) {
-            m_webSocket->deleteLater();
-        }
-        createAndConnect(url);
-    }
-}
-
-void WebSocketClient::createAndConnect(const QUrl &url)
-{
-    m_webSocket = new QWebSocket();
-    connectSignals();
-    m_webSocket->open(url);
-}
-
-
-QAbstractSocket::SocketState WebSocketClient::getState()
-{
-    return m_webSocket->state();
-}
-
-void WebSocketClient::ping()
-{
-    m_webSocket->ping();
-}
-
-bool WebSocketClient::isConnected() const {
-    return m_webSocket && m_webSocket->state() == QAbstractSocket::ConnectedState;
-}
-
-
-void WebSocketClient::onSocketError(QAbstractSocket::SocketError)
-{
-    QString error_str = m_webSocket->errorString();
-    emit errorOccurred(error_str);
-}
-
-void WebSocketClient::connectSignals()
-{
-    connect(m_webSocket, &QWebSocket::connected, this, &WebSocketClient::connected);
-    connect(m_webSocket, &QWebSocket::disconnected, this, &WebSocketClient::disconnected);
-    connect(m_webSocket, &QWebSocket::textMessageReceived, this, &WebSocketClient::messageReceived);
-    connect(m_webSocket, QOverload<QAbstractSocket::SocketError>::of(&QWebSocket::errorOccurred),
-            this, &WebSocketClient::onSocketError);
-}
-
