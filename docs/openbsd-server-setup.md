@@ -108,26 +108,25 @@ doas pip3 install -r requirements.txt
 
 ## 5. Настройка подключения к БД
 
-Проект использует `.env`-файлы для конфигурации подключения к базе данных. Они уже созданы в репозитории:
+Проект использует `.env`-файлы для конфигурации подключения к базе данных.
 
-- `server/auth_service/.env`
-- `server/main_service/.env`
+Создайте `.env` в `server/auth_service/`:
 
-Содержимое `server/auth_service/.env`:
-
-```env
+```sh
+cat > /home/user/kanemoot/server/auth_service/.env <<EOF
 DATABASE_URL=postgresql://admin:password@localhost/auth_service
+EOF
 ```
 
-Содержимое `server/main_service/.env`:
+Создайте `.env` в `server/main_service/`:
 
-```env
+```sh
+cat > /home/user/kanemoot/server/main_service/.env <<EOF
 DATABASE_URL=postgresql://admin:password@localhost/chat_service
+EOF
 ```
 
-Если вы клонировали репозиторий — эти файлы уже на месте. Если копировали вручную — создайте их в соответствующих директориях с указанным содержимым.
-
-> **Важно**: Файлы `.env` содержат пароль в открытом виде и **не должны** попадать в публичный репозиторий. В репозитории они уже добавлены в `.gitignore`.
+> **Важно**: Замените `password` на реальный пароль, который вы указали при создании пользователя admin в шаге 1. Файлы `.env` содержат пароль в открытом виде и **не должны** попадать в публичный репозиторий — они уже добавлены в `.gitignore`.
 
 ---
 
@@ -260,7 +259,7 @@ echo '{"action": "get_user_servers", "jwt": "test"}' | websocat ws://127.0.0.1:5
 
 ---
 
-## 10. (Опционально) relayd / nginx для единого порта
+## 10. (Опционально) nginx для единого порта с SSL
 
 Установите nginx:
 
@@ -268,30 +267,92 @@ echo '{"action": "get_user_servers", "jwt": "test"}' | websocat ws://127.0.0.1:5
 doas pkg_add nginx
 ```
 
+Получите SSL-сертификаты Let's Encrypt:
+
+```sh
+doas pkg_add certbot
+doas certbot certonly --nginx -d kanemoot.space
+```
+
+> **Примечание**: Замените `kanemoot.space` на ваш домен. Сертификаты сохранятся в `/etc/letsencrypt/live/kanemoot.space/`.
+
 Пример конфигурации `/etc/nginx/nginx.conf`:
 
 ```nginx
-upstream auth {
-    server 127.0.0.1:5001;
-}
-upstream chat {
-    server 127.0.0.1:5002;
-}
 server {
     listen 80;
+    server_name kanemoot.space;
+
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name kanemoot.space;
+
+    ssl_certificate /etc/letsencrypt/live/kanemoot.space/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/kanemoot.space/privkey.pem;
+
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    # Auth WebSocket
     location /auth/ws {
-        proxy_pass http://auth/ws;
+        proxy_pass http://127.0.0.1:5001/ws;
+
         proxy_http_version 1.1;
+
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        proxy_read_timeout 3600s;
+        proxy_send_timeout 3600s;
     }
+
+    # Chat WebSocket
     location /chat/ws {
-        proxy_pass http://chat/ws;
+        proxy_pass http://127.0.0.1:5002/ws;
+
         proxy_http_version 1.1;
+
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        proxy_read_timeout 3600s;
+        proxy_send_timeout 3600s;
     }
 }
+```
+
+> **Как это работает**: nginx принимает WebSocket-соединения на `wss://kanemoot.space/auth/ws` и `wss://kanemoot.space/chat/ws`, заменяет путь на `/ws` и проксирует на соответствующий aiohttp-сервер. Благодаря `proxy_pass http://127.0.0.1:5001/ws` (с `/ws` на конце) путь `/auth/ws` заменяется на `/ws`, и aiohttp, который слушает только `/ws`, получает правильный путь.
+
+Проверьте конфигурацию:
+
+```sh
+doas nginx -t
+doas rcctl restart nginx
+```
+
+Настройте автообновление сертификатов (добавьте в cron):
+
+```sh
+doas crontab -e
+```
+
+И добавьте строку:
+
+```
+0 3 * * * /usr/local/bin/certbot renew --quiet && rcctl reload nginx
 ```
 
 ---
