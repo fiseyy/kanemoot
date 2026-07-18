@@ -91,6 +91,18 @@ void ChatManager::onMessageReceived(const QString &text)
     QJsonObject obj = doc.object();
     QString action = obj.value("action").toString();
 
+    if (action == "error") {
+        QString code = obj.value("code").toString();
+        QString message = obj.value("message").toString();
+        LOG(Logging::Warning, ErrorCode::make(ErrorCode::Network, 0x06, ErrorCode::ChatManager),
+            "Ошибка сервера: " + code.toUtf8() + " - " + message.toUtf8());
+
+        if (code == "JWT_EXPIRED") {
+            emit jwtExpired();
+        }
+        return;
+    }
+
     if (action == "user_servers") {
         QJsonArray servers = obj.value("servers").toArray();
         emit userServersReceived(servers);
@@ -192,9 +204,13 @@ void ChatManager::deleteChannel(int channelId, int serverId)
     sendPendingMessages();
 }
 
-void ChatManager::getMessages(int channelId)
+void ChatManager::getMessages(int channelId, int guildId)
 {
-    QJsonObject obj { {"action", "get_messages"}, {"channel_id", channelId} };
+    QJsonObject obj {
+        {"action", "get_messages"},
+        {"channel_id", channelId},
+        {"guild_id", guildId}
+    };
     if (!addJwtToObject(obj, "getMessages")) return;
     enqueueMessage(obj);
     sendPendingMessages();

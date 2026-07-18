@@ -18,9 +18,9 @@ ApiEndpoints::ApiEndpoints(QObject *parent) : QObject(parent) {
 }
 
 void ApiEndpoints::initializeDefaultEndpoints() {
-    m_endpoints["auth"] = QUrl("wss://auth-service.kanemoot.ru/ws");
-    m_endpoints["chat"] = QUrl("wss://chat-service.kanemoot.ru/ws");
-    m_endpoints["dm"] = QUrl("wss://dm-service.kanemoot.ru/ws");
+    m_endpoints["auth"] = QUrl("wss://kanemoot.space/auth/ws");
+    m_endpoints["chat"] = QUrl("wss://kanemoot.space/chat/ws");
+    m_endpoints["dm"]   = QUrl("wss://kanemoot.space/dm/ws");
 }
 
 QUrl ApiEndpoints::getEndpoint(const QString &service) const {

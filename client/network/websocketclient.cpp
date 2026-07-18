@@ -9,27 +9,40 @@ WebSocketClient::WebSocketClient(QObject *parent)
 {
     setupSocket();
     m_socket.setSslConfiguration(QSslConfiguration::defaultConfiguration());
+    connect(&m_socket, &QWebSocket::errorOccurred, this, [](QAbstractSocket::SocketError error) {
+        qDebug() << "SOCKET ERROR CODE:" << error;
+    });
 }
 
 void WebSocketClient::connectToServer(const QUrl& url)
 {
     qDebug() << "WebSocketClient --> connectToServer begin --> start";
-    qDebug() << "m_state = " << int(m_state);
-    qDebug() << "url.isValid() = " << url.isValid();
 
-    if (m_state == SocketState::Connecting ||
-        m_state == SocketState::Connected ||
-        m_state == SocketState::Reconnecting)
-        return;
-
-    if (!url.isValid())
+    if (m_state == SocketState::Connecting || m_state == SocketState::Connected)
         return;
 
     m_lastUrl = url;
     m_state = SocketState::Connecting;
-    m_lastDisconnectReason = DisconnectReason::None;
 
-    m_socket.open(url);
+    QNetworkRequest request(url);
+
+    request.setRawHeader("Host", url.host().toUtf8());
+    request.setRawHeader("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X)");
+    request.setRawHeader("Origin", QString("https://%1").arg(url.host()).toUtf8());
+
+    QSslConfiguration sslConfig = QSslConfiguration::defaultConfiguration();
+    sslConfig.setPeerVerifyMode(QSslSocket::VerifyNone);
+
+    sslConfig.setProtocol(QSsl::AnyProtocol);
+    m_socket.setSslConfiguration(sslConfig);
+
+    QObject::connect(&m_socket, &QWebSocket::sslErrors,
+                     [](const QList<QSslError> &errors) {
+                         qDebug() << "SSL errors ignored:" << errors;
+                     });
+
+    m_socket.open(request);
+
     qDebug() << "WebSocketClient --> connectToServer begin --> finish";
 }
 

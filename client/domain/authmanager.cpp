@@ -120,6 +120,7 @@ void AuthManager::onEndpointChanged(const QString &service, const QUrl &newUrl)
 
 void AuthManager::onMessageReceived(const QString &message)
 {
+    qDebug() << "RECEIVED AUTH RESPONCE: " << message;
     if (message.isEmpty()) {
         failAuth("Пустой ответ сервера");
         return;

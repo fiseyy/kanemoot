@@ -206,8 +206,8 @@ Item {
                         console.log(chatPage ? "CHATPAGE ЕСТЬ" : "CHATPAGE НЕТ")
                         if (chatMgr) {
                             clearMessagesRequested()
-                            chatMgr.getMessages(modelData.id)
-                            console.log("Запрос сообщений отправлен для канала", modelData.id)
+                            chatMgr.getMessages(modelData.id, serverData.id)
+                            console.log("Запрос сообщений отправлен для канала", modelData.id, "guild", serverData.id)
                         }
                     }
 

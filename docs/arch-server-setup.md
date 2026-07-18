@@ -45,7 +45,7 @@ exit
 
 ---
 
-## 2. Установка Python и pip
+## 2. Установка Python, pip и venv
 
 На Arch Linux Python 3 уже предустановлен. Проверьте версию:
 
@@ -53,10 +53,10 @@ exit
 python --version
 ```
 
-Установите pip (если отсутствует):
+Установите pip и venv (если отсутствуют):
 
 ```sh
-sudo pacman -S python-pip
+sudo pacman -S python-pip python-virtualenv
 ```
 
 ---
@@ -66,19 +66,27 @@ sudo pacman -S python-pip
 Скопируйте директорию `server/` на Arch-машину, например через scp:
 
 ```sh
-scp -r server/ user@arch-host:/home/user/kanemoot-server/
+scp -r server/ user@arch-host:/kanemoot/server
 ```
 
 Или клонируйте репозиторий:
 
 ```sh
-cd /home/user
+sudo mkdir -p /kanemoot
+sudo chown $USER:$USER /kanemoot
+cd /kanemoot
 git clone https://github.com/fiseyy/kanemoot.git
 ```
 
+> **Важно**: После клонирования весь репозиторий окажется в `/kanemoot/kanemoot/`. Переместите папку `server`:
+> ```sh
+> mv /kanemoot/kanemoot/server /kanemoot/server
+> rm -rf /kanemoot/kanemoot
+> ```
+
 ---
 
-## 4. Установка Python-зависимостей
+## 4. Создание виртуального окружения и установка зависимостей
 
 Файл `requirements.txt` находится в корне `server/`:
 
@@ -91,17 +99,26 @@ pyjwt
 python-dotenv
 ```
 
-Установите зависимости:
+Создайте виртуальное окружение:
 
 ```sh
-cd /home/user/kanemoot/server
-sudo pip install -r requirements.txt
+cd /kanemoot/server
+python -m venv venv
+```
+
+Активируйте его и установите зависимости:
+
+```sh
+source venv/bin/activate
+pip install -r requirements.txt
+deactivate
 ```
 
 > **Примечание для Arch**: Если `psycopg2-binary` не собирается, установите системный пакет:
 > ```sh
 > sudo pacman -S python-psycopg2
 > ```
+> Затем установите остальные зависимости через pip (psycopg2-binary можно исключить из requirements.txt).
 
 ---
 
@@ -112,7 +129,7 @@ sudo pip install -r requirements.txt
 Создайте `.env` в `server/auth_service/`:
 
 ```sh
-cat > /home/user/kanemoot/server/auth_service/.env <<EOF
+cat > /kanemoot/server/auth_service/.env <<EOF
 DATABASE_URL=postgresql://admin:password@localhost/auth_service
 EOF
 ```
@@ -120,7 +137,7 @@ EOF
 Создайте `.env` в `server/main_service/`:
 
 ```sh
-cat > /home/user/kanemoot/server/main_service/.env <<EOF
+cat > /kanemoot/server/main_service/.env <<EOF
 DATABASE_URL=postgresql://admin:password@localhost/chat_service
 EOF
 ```
@@ -134,15 +151,15 @@ EOF
 **Терминал 1 — auth-service (порт 5001):**
 
 ```sh
-cd /home/user/kanemoot/server/auth_service
-python main.py
+cd /kanemoot/server/auth_service
+/kanemoot/server/venv/bin/python main.py
 ```
 
 **Терминал 2 — main-service (порт 5002):**
 
 ```sh
-cd /home/user/kanemoot/server/main_service
-python main.py
+cd /kanemoot/server/main_service
+/kanemoot/server/venv/bin/python main.py
 ```
 
 Ожидаемый вывод:
@@ -164,10 +181,10 @@ Description=Kanemoot Auth Service
 After=network.target postgresql.service
 
 [Service]
-ExecStart=/usr/bin/python /home/user/kanemoot/server/auth_service/main.py
+ExecStart=/kanemoot/server/venv/bin/python /kanemoot/server/auth_service/main.py
 Restart=on-failure
 User=root
-WorkingDirectory=/home/user/kanemoot/server/auth_service
+WorkingDirectory=/kanemoot/server/auth_service
 
 [Install]
 WantedBy=multi-user.target
@@ -181,16 +198,16 @@ Description=Kanemoot Chat Service
 After=network.target postgresql.service
 
 [Service]
-ExecStart=/usr/bin/python /home/user/kanemoot/server/main_service/main.py
+ExecStart=/kanemoot/server/venv/bin/python /kanemoot/server/main_service/main.py
 Restart=on-failure
 User=root
-WorkingDirectory=/home/user/kanemoot/server/main_service
+WorkingDirectory=/kanemoot/server/main_service
 
 [Install]
 WantedBy=multi-user.target
 ```
 
-> **Важно**: `WorkingDirectory` указывает на директорию с `.env`, чтобы `load_dotenv()` нашёл файл.
+> **Важно**: `ExecStart` использует python из venv (`/kanemoot/server/venv/bin/python`), а `WorkingDirectory` указывает на директорию с `.env`, чтобы `load_dotenv()` нашёл файл.
 
 Включите и запустите:
 
@@ -391,8 +408,35 @@ sudo systemctl start certbot-renew.timer
 
 ## Итоговая структура
 
+```
+/kanemoot/server/
+├── requirements.txt
+├── venv/                          # виртуальное окружение
+│   └── bin/python                 # используется в systemd
+├── auth_service/
+│   ├── .env
+│   ├── main.py
+│   ├── models.py
+│   └── database.py
+└── main_service/
+    ├── .env
+    ├── main.py
+    ├── models.py
+    ├── handlers/
+    │   └── websocket_handler.py
+    ├── repositories/
+    │   ├── channels.py
+    │   ├── memberships.py
+    │   ├── messages.py
+    │   └── servers.py
+    └── services/
+        ├── chat_service.py
+        └── server_service.py
+```
+
 | Компонент     | Порт | Путь                                           |
 |---------------|------|------------------------------------------------|
-| auth-service  | 5001 | `/home/user/kanemoot/server/auth_service/main.py` |
-| main-service  | 5002 | `/home/user/kanemoot/server/main_service/main.py` |
+| auth-service  | 5001 | `/kanemoot/server/auth_service/main.py`        |
+| main-service  | 5002 | `/kanemoot/server/main_service/main.py`        |
+| venv python   | —    | `/kanemoot/server/venv/bin/python`             |
 | PostgreSQL    | 5432 | —                                              |
