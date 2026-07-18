@@ -55,3 +55,7 @@ compile_commands.json
 **/build/
 test_server.py
 
+# Environment files
+.env
+
+

@@ -1,8 +1,12 @@
+import os
+from dotenv import load_dotenv
 from models import SessionLocal, User, AccessToken
 import bcrypt
 import psycopg2
 import uuid
 from datetime import datetime, timedelta
+
+load_dotenv()
 
 def create_user(username, password):
     password_hash = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
@@ -27,12 +31,8 @@ def authenticate_user(username, password):
 
 def check_connection():
     try:
-        connection = psycopg2.connect(
-            dbname="auth_service",
-            user="admin",
-            password="password",
-            host="localhost"
-        )
+        from models import DATABASE_URL
+        connection = psycopg2.connect(DATABASE_URL)
         print("Подключение успешно!")
         connection.close()
         return True

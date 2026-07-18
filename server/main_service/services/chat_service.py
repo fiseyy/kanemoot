@@ -21,3 +21,7 @@ class ChatService:
 
     def get_messages(self, channel_id: int, limit: int = 50):
         return self.repo.get_last(channel_id, limit)
+    
+    def check_user_access(self, user_id: int, guild_id: int) -> bool:
+        """Проверка доступа пользователя к guild"""
+        return self.membership_repo.is_member(user_id, guild_id)
