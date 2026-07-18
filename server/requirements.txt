@@ -1,0 +1,6 @@
+aiohttp
+sqlalchemy
+psycopg2-binary
+bcrypt
+pyjwt
+python-dotenv
